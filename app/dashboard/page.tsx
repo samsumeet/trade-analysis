@@ -7,6 +7,8 @@ interface DashboardRouteProps {
   };
 }
 
+export const dynamic = "force-dynamic";
+
 export default function Page({ searchParams }: DashboardRouteProps) {
   const initialTicker = getAnalysisTicker(searchParams?.ticker);
 

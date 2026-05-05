@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowUpRight,
   BrainCircuit,
@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 
 import { AnalysisDashboard } from "@/components/analysis-dashboard";
+import { DashboardLoader } from "@/components/dashboard-loader";
+import { DashboardStatus } from "@/components/dashboard-status";
 import { Footer } from "@/components/footer";
 import { SampleReport } from "@/components/sample-report";
 import { SiteHeader } from "@/components/site-header";
@@ -18,52 +20,131 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { featuredSymbols, stockAnalyses } from "@/data/mock-analysis";
 import { formatCurrency } from "@/lib/utils";
+import { StockAnalysisData } from "@/types/stock";
 
 interface DashboardPageProps {
   initialTicker: string;
+}
+
+interface AnalysisApiResponse {
+  analysis: StockAnalysisData;
+  error?: string;
+  isLive: boolean;
 }
 
 const dashboardCards = [
   {
     icon: BrainCircuit,
     label: "AI posture",
-    getValue: (analysisSymbol: string) => stockAnalyses[analysisSymbol].trendBias
+    getValue: (analysis: StockAnalysisData) => analysis.trendBias
   },
   {
     icon: ShieldCheck,
     label: "Confidence",
-    getValue: (analysisSymbol: string) =>
-      `${stockAnalyses[analysisSymbol].confidenceScore}/100`
+    getValue: (analysis: StockAnalysisData) => `${analysis.confidenceScore}/100`
   },
   {
     icon: Target,
     label: "Ideal entry",
-    getValue: (analysisSymbol: string) =>
-      stockAnalyses[analysisSymbol].tradePlan[0]?.range ?? "N/A"
+    getValue: (analysis: StockAnalysisData) => analysis.tradePlan[0]?.range ?? "N/A"
   },
   {
     icon: BriefcaseBusiness,
     label: "Current price",
-    getValue: (analysisSymbol: string) =>
-      formatCurrency(stockAnalyses[analysisSymbol].currentPrice)
+    getValue: (analysis: StockAnalysisData) => formatCurrency(analysis.currentPrice)
   }
 ];
 
 export function DashboardPage({ initialTicker }: DashboardPageProps) {
   const [activeTicker, setActiveTicker] = useState(initialTicker);
+  const [analysis, setAnalysis] = useState<StockAnalysisData>(
+    stockAnalyses[initialTicker] ?? stockAnalyses.HIMS
+  );
+  const [error, setError] = useState<string | undefined>(undefined);
+  const [isLive, setIsLive] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [reloadKey, setReloadKey] = useState(0);
+  const requestIdRef = useRef(0);
 
   useEffect(() => {
     setActiveTicker(initialTicker);
   }, [initialTicker]);
 
-  const analysis = useMemo(
-    () => stockAnalyses[activeTicker] ?? stockAnalyses.HIMS,
-    [activeTicker]
-  );
+  useEffect(() => {
+    const controller = new AbortController();
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
 
-  const syncTicker = (ticker: string) => {
+    async function loadAnalysis() {
+      setIsLoading(true);
+      setError(undefined);
+
+      try {
+        const response = await fetch(`/api/analyze?ticker=${activeTicker}`, {
+          cache: "no-store",
+          signal: controller.signal
+        });
+
+        if (!response.ok) {
+          throw new Error(`Request failed with ${response.status}`);
+        }
+
+        const payload = (await response.json()) as AnalysisApiResponse;
+
+        if (requestId !== requestIdRef.current) {
+          return;
+        }
+
+        setAnalysis(payload.analysis);
+        setError(payload.error);
+        setIsLive(payload.isLive);
+      } catch (fetchError) {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        if (requestId !== requestIdRef.current) {
+          return;
+        }
+
+        setAnalysis(stockAnalyses[activeTicker] ?? stockAnalyses.HIMS);
+        setError(fetchError instanceof Error ? fetchError.message : "Failed to load analysis");
+        setIsLive(false);
+      } finally {
+        if (requestId === requestIdRef.current) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadAnalysis();
+
+    return () => controller.abort();
+  }, [activeTicker, reloadKey]);
+
+  const selectTicker = (ticker: string) => {
+    if (ticker === activeTicker) {
+      return;
+    }
+
     setActiveTicker(ticker);
+    setAnalysis(stockAnalyses[ticker] ?? stockAnalyses.HIMS);
+    setIsLoading(true);
     window.history.replaceState(null, "", `/dashboard?ticker=${ticker}`);
+  };
+
+  const refreshTicker = (ticker: string) => {
+    if (ticker === activeTicker) {
+      setIsLoading(true);
+      setAnalysis(stockAnalyses[ticker] ?? stockAnalyses.HIMS);
+      setError(undefined);
+      setIsLive(false);
+      setReloadKey((current) => current + 1);
+      window.history.replaceState(null, "", `/dashboard?ticker=${ticker}`);
+      return;
+    }
+
+    selectTicker(ticker);
   };
 
   return (
@@ -86,6 +167,9 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
               <Badge variant="info" className="w-fit">
                 Full analysis dashboard
               </Badge>
+              <div className="mt-4">
+                <DashboardStatus error={error} isLive={isLive} />
+              </div>
               <h1 className="mt-5 text-balance text-4xl font-semibold leading-tight text-slate-950 sm:text-5xl">
                 Dedicated analysis workspace for {analysis.symbol}
               </h1>
@@ -100,8 +184,8 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                   symbols={featuredSymbols}
                   activeTicker={activeTicker}
                   setActiveTicker={setActiveTicker}
-                  onAnalyze={syncTicker}
-                  onTickerSelect={syncTicker}
+                  onAnalyze={refreshTicker}
+                  onTickerSelect={selectTicker}
                   sampleReportTargetId="report"
                 />
               </div>
@@ -150,7 +234,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                               {label}
                             </p>
                             <p className="mt-1 text-sm font-medium text-white">
-                              {getValue(analysis.symbol)}
+                              {getValue(analysis)}
                             </p>
                           </div>
                         </div>
@@ -174,12 +258,36 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
       </div>
 
       <section id="dashboard" className="container mt-8 scroll-mt-10">
-        <AnalysisDashboard analysis={analysis} mode="full" />
+        {isLoading ? (
+          <DashboardLoader ticker={activeTicker} />
+        ) : (
+          <AnalysisDashboard analysis={analysis} mode="full" />
+        )}
       </section>
 
       <section id="report" className="container mt-24 scroll-mt-10">
         <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-          <SampleReport analysis={analysis} />
+          {isLoading ? (
+            <Card className="overflow-hidden rounded-[28px] border-slate-200/70">
+              <CardContent className="space-y-5 p-6">
+                <div className="h-5 w-40 animate-pulse rounded-full bg-slate-200" />
+                <div className="h-10 w-3/4 animate-pulse rounded-2xl bg-slate-200" />
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className="space-y-3 rounded-2xl border border-slate-200 bg-white p-5"
+                    >
+                      <div className="h-4 w-24 animate-pulse rounded-full bg-slate-200" />
+                      <div className="h-20 animate-pulse rounded-2xl bg-slate-100" />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <SampleReport analysis={analysis} />
+          )}
           <div className="space-y-6">
             <Card className="rounded-[28px] border-slate-200/70 bg-white/90">
               <CardContent className="p-6">
@@ -187,18 +295,31 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                   Execution checklist
                 </p>
                 <div className="mt-5 space-y-4">
-                  {analysis.keyLevels.slice(0, 4).map((level) => (
-                    <div
-                      key={level.label}
-                      className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4"
-                    >
-                      <div className="flex items-center justify-between gap-4">
-                        <p className="text-sm font-medium text-slate-900">{level.label}</p>
-                        <p className="text-sm font-semibold text-slate-950">{level.value}</p>
-                      </div>
-                      <p className="mt-2 text-sm leading-6 text-slate-500">{level.context}</p>
-                    </div>
-                  ))}
+                  {isLoading
+                    ? Array.from({ length: 4 }).map((_, index) => (
+                        <div
+                          key={index}
+                          className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4"
+                        >
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="h-4 w-24 animate-pulse rounded-full bg-slate-200" />
+                            <div className="h-4 w-20 animate-pulse rounded-full bg-slate-200" />
+                          </div>
+                          <div className="mt-3 h-12 animate-pulse rounded-2xl bg-slate-100" />
+                        </div>
+                      ))
+                    : analysis.keyLevels.slice(0, 4).map((level) => (
+                        <div
+                          key={level.label}
+                          className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4"
+                        >
+                          <div className="flex items-center justify-between gap-4">
+                            <p className="text-sm font-medium text-slate-900">{level.label}</p>
+                            <p className="text-sm font-semibold text-slate-950">{level.value}</p>
+                          </div>
+                          <p className="mt-2 text-sm leading-6 text-slate-500">{level.context}</p>
+                        </div>
+                      ))}
                 </div>
               </CardContent>
             </Card>
@@ -208,26 +329,43 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                 <p className="text-sm font-semibold uppercase tracking-[0.16em] text-blue-200">
                   AI trade brief
                 </p>
-                <h3 className="mt-3 text-2xl font-semibold">{analysis.trendBias}</h3>
-                <p className="mt-4 text-sm leading-7 text-slate-100">
-                  {analysis.executiveSummary}
-                </p>
+                {isLoading ? (
+                  <>
+                    <div className="mt-3 h-8 w-40 animate-pulse rounded-full bg-white/15" />
+                    <div className="mt-4 h-24 animate-pulse rounded-3xl bg-white/10" />
+                  </>
+                ) : (
+                  <>
+                    <h3 className="mt-3 text-2xl font-semibold">{analysis.trendBias}</h3>
+                    <p className="mt-4 text-sm leading-7 text-slate-100">
+                      {analysis.executiveSummary}
+                    </p>
+                  </>
+                )}
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
                   <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
                     <p className="text-xs uppercase tracking-[0.16em] text-slate-300">
                       Momentum read
                     </p>
-                    <p className="mt-2 text-sm leading-6 text-white">
-                      {analysis.momentumRead}
-                    </p>
+                    {isLoading ? (
+                      <div className="mt-2 h-20 animate-pulse rounded-2xl bg-white/10" />
+                    ) : (
+                      <p className="mt-2 text-sm leading-6 text-white">
+                        {analysis.momentumRead}
+                      </p>
+                    )}
                   </div>
                   <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
                     <p className="text-xs uppercase tracking-[0.16em] text-slate-300">
                       Risk note
                     </p>
-                    <p className="mt-2 text-sm leading-6 text-white">
-                      {analysis.riskNotes}
-                    </p>
+                    {isLoading ? (
+                      <div className="mt-2 h-20 animate-pulse rounded-2xl bg-white/10" />
+                    ) : (
+                      <p className="mt-2 text-sm leading-6 text-white">
+                        {analysis.riskNotes}
+                      </p>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -239,22 +377,35 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                   Indicator stack
                 </p>
                 <div className="mt-5 space-y-3">
-                  {analysis.indicators.map((indicator) => (
-                    <div
-                      key={indicator.name}
-                      className="rounded-2xl border border-slate-200 bg-white p-4"
-                    >
-                      <div className="flex items-center justify-between gap-4">
-                        <p className="text-sm font-medium text-slate-900">{indicator.name}</p>
-                        <Badge variant="default" className="bg-slate-100 text-slate-700">
-                          {indicator.value}
-                        </Badge>
-                      </div>
-                      <p className="mt-2 text-sm leading-6 text-slate-500">
-                        {indicator.description}
-                      </p>
-                    </div>
-                  ))}
+                  {isLoading
+                    ? Array.from({ length: 5 }).map((_, index) => (
+                        <div
+                          key={index}
+                          className="rounded-2xl border border-slate-200 bg-white p-4"
+                        >
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="h-4 w-28 animate-pulse rounded-full bg-slate-200" />
+                            <div className="h-6 w-20 animate-pulse rounded-full bg-slate-200" />
+                          </div>
+                          <div className="mt-3 h-12 animate-pulse rounded-2xl bg-slate-100" />
+                        </div>
+                      ))
+                    : analysis.indicators.map((indicator) => (
+                        <div
+                          key={indicator.name}
+                          className="rounded-2xl border border-slate-200 bg-white p-4"
+                        >
+                          <div className="flex items-center justify-between gap-4">
+                            <p className="text-sm font-medium text-slate-900">{indicator.name}</p>
+                            <Badge variant="default" className="bg-slate-100 text-slate-700">
+                              {indicator.value}
+                            </Badge>
+                          </div>
+                          <p className="mt-2 text-sm leading-6 text-slate-500">
+                            {indicator.description}
+                          </p>
+                        </div>
+                      ))}
                 </div>
               </CardContent>
             </Card>
