@@ -1,6 +1,6 @@
 # trade-analysis
 
-trade-analysis is a premium frontend for an AI-powered stock analysis platform built for active traders and retail investors. It combines a polished marketing site with an interactive analysis dashboard, giving users a structured view of price action, technical indicators, trade plans, key levels, and AI-generated bull/bear scenarios. The project is built with Next.js, TypeScript, Tailwind CSS, Recharts, and Framer Motion, with all market data mocked for a production-style product experience.
+trade-analysis is a premium frontend for an AI-powered stock analysis platform built for active traders and retail investors. It combines a polished marketing site with an interactive analysis dashboard, giving users a structured view of price action, technical indicators, trade plans, key levels, and AI-generated bull/bear scenarios. The project is built with Next.js, TypeScript, Tailwind CSS, Recharts, and Framer Motion, with all market data  for a production-style product experience.
 
 ## Stack
 
