@@ -374,12 +374,38 @@ export const stockAnalyses: Record<string, StockAnalysisData> = {
 
 export const featuredSymbols = Object.keys(stockAnalyses);
 
+export function getFallbackAnalysis(ticker?: string) {
+  const normalized = getAnalysisTicker(ticker);
+  const existing = stockAnalyses[normalized];
+
+  if (existing) {
+    return existing;
+  }
+
+  return {
+    ...stockAnalyses.NVDA,
+    symbol: normalized,
+    companyName: `${normalized} analysis pending live data`,
+    aiSummary: `Waiting for live backend analysis for ${normalized}.`,
+    executiveSummary: `Live analysis for ${normalized} is not available yet, so this dashboard is holding a neutral fallback shell.`,
+    currentSetup: `The dashboard is ready to display the live technical setup for ${normalized} as soon as the analysis service responds.`,
+    momentumRead: `Momentum and indicator readings will appear here once the backend returns data for ${normalized}.`,
+    riskNotes: `Use this view as a placeholder until live analysis is available for ${normalized}.`,
+    reportSections: [
+      {
+        label: "Status",
+        value: `Live analysis for ${normalized} is pending.`
+      }
+    ]
+  };
+}
+
 export function getAnalysisTicker(ticker?: string) {
   const normalized = ticker?.trim().toUpperCase();
 
-  if (normalized && normalized in stockAnalyses) {
+  if (normalized && /^[A-Z.\-]{1,10}$/.test(normalized)) {
     return normalized;
   }
 
-  return featuredSymbols[0] ?? "HIMS";
+  return "NVDA";
 }

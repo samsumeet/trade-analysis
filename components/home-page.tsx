@@ -24,7 +24,7 @@ import { SampleReport } from "@/components/sample-report";
 import { SectionHeading } from "@/components/section-heading";
 import { SiteHeader } from "@/components/site-header";
 import { Card, CardContent } from "@/components/ui/card";
-import { featuredSymbols, stockAnalyses } from "@/data/mock-analysis";
+import { stockAnalyses } from "@/data/mock-analysis";
 
 const infrastructureFeatures = [
   {
@@ -100,10 +100,10 @@ const featureGrid = [
 ];
 
 export function HomePage() {
-  const [activeTicker, setActiveTicker] = useState("HIMS");
+  const [activeTicker, setActiveTicker] = useState("NVDA");
 
   const currentAnalysis = useMemo(
-    () => stockAnalyses[activeTicker] ?? stockAnalyses.HIMS,
+    () => stockAnalyses[activeTicker] ?? stockAnalyses.NVDA,
     [activeTicker]
   );
 
@@ -119,7 +119,6 @@ export function HomePage() {
       />
 
       <Hero
-        symbols={featuredSymbols}
         activeTicker={activeTicker}
         setActiveTicker={setActiveTicker}
       />

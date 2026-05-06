@@ -9,7 +9,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { TickerSearch } from "@/components/ticker-search";
 
 interface HeroProps {
-  symbols: string[];
   activeTicker: string;
   setActiveTicker: Dispatch<SetStateAction<string>>;
 }
@@ -37,7 +36,7 @@ const heroStats = [
   }
 ];
 
-export function Hero({ symbols, activeTicker, setActiveTicker }: HeroProps) {
+export function Hero({ activeTicker, setActiveTicker }: HeroProps) {
   return (
     <section className="relative overflow-hidden pt-8 sm:pt-12">
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.14),transparent_26%),radial-gradient(circle_at_left,rgba(16,185,129,0.12),transparent_24%),linear-gradient(to_bottom,rgba(255,255,255,0.86),rgba(248,250,252,1))]" />
@@ -68,12 +67,13 @@ export function Hero({ symbols, activeTicker, setActiveTicker }: HeroProps) {
             </motion.p>
             <div className="mt-8">
               <TickerSearch
-                symbols={symbols}
                 activeTicker={activeTicker}
                 setActiveTicker={setActiveTicker}
                 onAnalyze={(ticker) => {
                   window.location.href = `/dashboard?ticker=${ticker}`;
                 }}
+                quickTickers={["NVDA", "AAPL", "MSFT", "AMZN", "TSLA"]}
+                quickTickersLabel="Popular large-cap tickers"
               />
             </div>
             <p className="mt-4 text-sm text-slate-500">

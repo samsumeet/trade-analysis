@@ -1,4 +1,4 @@
-import { getAnalysisTicker, stockAnalyses } from "@/data/mock-analysis";
+import { getAnalysisTicker, getFallbackAnalysis, stockAnalyses } from "@/data/mock-analysis";
 import {
   HistogramPoint,
   IndicatorStatus,
@@ -12,7 +12,7 @@ import {
   TradeLevel
 } from "@/types/stock";
 
-const ANALYZE_API_URL = "http://127.0.0.1:3001/api/analyze";
+const ANALYZE_API_URL = "https://trade-analysis-api-two.vercel.app/api/analyze";
 const ANALYZE_API_TIMEOUT_MS = 15000;
 
 interface FetchAnalysisResult {
@@ -307,7 +307,7 @@ function normalizeReportSections(
 
 function normalizeAnalysis(ticker: string, raw: unknown): StockAnalysisData {
   const normalizedTicker = getAnalysisTicker(ticker);
-  const fallback = stockAnalyses[normalizedTicker];
+  const fallback = getFallbackAnalysis(normalizedTicker);
   const payloadSource = isObject(raw)
     ? isObject(raw.data)
       ? isObject(raw.data[normalizedTicker])
@@ -471,7 +471,7 @@ export async function fetchLiveAnalysis(ticker: string): Promise<FetchAnalysisRe
           : "Unknown API error";
 
     return {
-      analysis: stockAnalyses[normalizedTicker],
+      analysis: getFallbackAnalysis(normalizedTicker),
       error: message,
       isLive: false
     };

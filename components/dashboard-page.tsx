@@ -6,6 +6,7 @@ import {
   BrainCircuit,
   BriefcaseBusiness,
   ShieldCheck,
+  Star,
   Target
 } from "lucide-react";
 
@@ -17,8 +18,9 @@ import { SampleReport } from "@/components/sample-report";
 import { SiteHeader } from "@/components/site-header";
 import { TickerSearch } from "@/components/ticker-search";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { featuredSymbols, stockAnalyses } from "@/data/mock-analysis";
+import { getFallbackAnalysis } from "@/data/mock-analysis";
 import { formatCurrency } from "@/lib/utils";
 import { StockAnalysisData } from "@/types/stock";
 
@@ -31,6 +33,9 @@ interface AnalysisApiResponse {
   error?: string;
   isLive: boolean;
 }
+
+const FAVORITES_STORAGE_KEY = "trade-analysis:favorites";
+const MAX_FAVORITES = 5;
 
 const dashboardCards = [
   {
@@ -58,13 +63,41 @@ const dashboardCards = [
 export function DashboardPage({ initialTicker }: DashboardPageProps) {
   const [activeTicker, setActiveTicker] = useState(initialTicker);
   const [analysis, setAnalysis] = useState<StockAnalysisData>(
-    stockAnalyses[initialTicker] ?? stockAnalyses.HIMS
+    getFallbackAnalysis(initialTicker)
   );
   const [error, setError] = useState<string | undefined>(undefined);
   const [isLive, setIsLive] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [reloadKey, setReloadKey] = useState(0);
+  const [favorites, setFavorites] = useState<string[]>([]);
   const requestIdRef = useRef(0);
+
+  useEffect(() => {
+    try {
+      const cached = window.localStorage.getItem(FAVORITES_STORAGE_KEY);
+      if (!cached) {
+        return;
+      }
+
+      const parsed = JSON.parse(cached) as unknown;
+      if (!Array.isArray(parsed)) {
+        return;
+      }
+
+      const validFavorites = parsed
+        .map((item) => (typeof item === "string" ? item.toUpperCase() : null))
+        .filter((item): item is string => Boolean(item))
+        .slice(0, MAX_FAVORITES);
+
+      setFavorites(validFavorites);
+    } catch {
+      setFavorites([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
+  }, [favorites]);
 
   useEffect(() => {
     setActiveTicker(initialTicker);
@@ -107,7 +140,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
           return;
         }
 
-        setAnalysis(stockAnalyses[activeTicker] ?? stockAnalyses.HIMS);
+        setAnalysis(getFallbackAnalysis(activeTicker));
         setError(fetchError instanceof Error ? fetchError.message : "Failed to load analysis");
         setIsLive(false);
       } finally {
@@ -128,7 +161,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
     }
 
     setActiveTicker(ticker);
-    setAnalysis(stockAnalyses[ticker] ?? stockAnalyses.HIMS);
+    setAnalysis(getFallbackAnalysis(ticker));
     setIsLoading(true);
     window.history.replaceState(null, "", `/dashboard?ticker=${ticker}`);
   };
@@ -136,7 +169,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
   const refreshTicker = (ticker: string) => {
     if (ticker === activeTicker) {
       setIsLoading(true);
-      setAnalysis(stockAnalyses[ticker] ?? stockAnalyses.HIMS);
+      setAnalysis(getFallbackAnalysis(ticker));
       setError(undefined);
       setIsLive(false);
       setReloadKey((current) => current + 1);
@@ -145,6 +178,23 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
     }
 
     selectTicker(ticker);
+  };
+
+  const isFavorite = favorites.includes(activeTicker);
+  const canAddFavorite = isFavorite || favorites.length < MAX_FAVORITES;
+
+  const toggleFavorite = () => {
+    setFavorites((current) => {
+      if (current.includes(activeTicker)) {
+        return current.filter((ticker) => ticker !== activeTicker);
+      }
+
+      if (current.length >= MAX_FAVORITES) {
+        return current;
+      }
+
+      return [activeTicker, ...current].slice(0, MAX_FAVORITES);
+    });
   };
 
   return (
@@ -181,13 +231,63 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
 
               <div className="mt-8">
                 <TickerSearch
-                  symbols={featuredSymbols}
                   activeTicker={activeTicker}
                   setActiveTicker={setActiveTicker}
                   onAnalyze={refreshTicker}
                   onTickerSelect={selectTicker}
                   sampleReportTargetId="report"
+                  quickTickers={favorites}
+                  quickTickersLabel="Favorites"
                 />
+              </div>
+
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                <Button
+                  type="button"
+                  variant={isFavorite ? "default" : "secondary"}
+                  size="sm"
+                  onClick={toggleFavorite}
+                  disabled={!canAddFavorite}
+                  className="gap-2"
+                >
+                  <Star className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />
+                  {isFavorite ? "Saved to favorites" : "Add to favorites"}
+                </Button>
+                <p className="text-sm text-slate-500">
+                  Save up to {MAX_FAVORITES} favorite stocks in your browser.
+                </p>
+              </div>
+
+              <div className="mt-4">
+                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  Favorite stocks
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {favorites.length > 0 ? (
+                    favorites.map((ticker) => {
+                      const active = ticker === activeTicker;
+
+                      return (
+                        <button
+                          key={ticker}
+                          type="button"
+                          onClick={() => selectTicker(ticker)}
+                          className={`rounded-full px-3 py-1.5 text-sm transition ${
+                            active
+                              ? "bg-slate-900 text-white"
+                              : "bg-white/80 text-slate-600 hover:bg-white"
+                          }`}
+                        >
+                          {ticker}
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <div className="rounded-full bg-white/80 px-3 py-1.5 text-sm text-slate-500">
+                      No favorites saved yet
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="mt-8 flex flex-wrap gap-3">
