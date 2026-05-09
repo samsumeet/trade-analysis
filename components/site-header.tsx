@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -20,10 +21,8 @@ export function SiteHeader({
   return (
     <header className="container flex items-center justify-between py-6">
       <div>
-        <a href="/" className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-          trade-analysis
-        </a>
-        <p className="text-sm text-slate-500 dark:text-slate-400">AI equity research terminal</p>
+        <BrandLogo href="/" priority />
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">AI equity research terminal</p>
       </div>
 
       <div className="flex items-center gap-4">

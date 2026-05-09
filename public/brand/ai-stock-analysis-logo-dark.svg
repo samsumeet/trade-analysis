@@ -1,0 +1,71 @@
+<svg width="1240" height="280" viewBox="0 0 1240 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="frame" x1="42" y1="232" x2="216" y2="54" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1591F0"/>
+      <stop offset="0.52" stop-color="#1FD4F2"/>
+      <stop offset="1" stop-color="#69F08A"/>
+    </linearGradient>
+    <linearGradient id="candle" x1="130" y1="80" x2="130" y2="184" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#69F08A"/>
+      <stop offset="1" stop-color="#14A9F2"/>
+    </linearGradient>
+    <linearGradient id="trend" x1="50" y1="195" x2="178" y2="132" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#14A9F2"/>
+      <stop offset="1" stop-color="#2AF1E8"/>
+    </linearGradient>
+    <linearGradient id="wordmark" x1="255" y1="64" x2="930" y2="184" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1591F0"/>
+      <stop offset="0.6" stop-color="#1FD4F2"/>
+      <stop offset="1" stop-color="#69F08A"/>
+    </linearGradient>
+  </defs>
+
+  <path
+    d="M99 48H188L226 86V194L188 232H77L39 194V86L99 48Z"
+    stroke="url(#frame)"
+    stroke-width="14"
+    stroke-linejoin="round"
+  />
+  <path d="M154 69H188V150L171 163V82H154V69Z" fill="url(#frame)"/>
+
+  <g stroke="url(#candle)" stroke-width="4" stroke-linecap="round">
+    <line x1="89" y1="106" x2="89" y2="176"/>
+    <line x1="118" y1="87" x2="118" y2="167"/>
+    <line x1="147" y1="67" x2="147" y2="155"/>
+  </g>
+  <g fill="url(#candle)">
+    <rect x="78" y="126" width="22" height="42" rx="2"/>
+    <rect x="107" y="103" width="22" height="48" rx="2"/>
+    <rect x="136" y="79" width="22" height="50" rx="2"/>
+  </g>
+
+  <path
+    d="M51 201L81 180H106L132 159L160 141L187 122"
+    stroke="url(#trend)"
+    stroke-width="6"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <g fill="url(#trend)" stroke="#020617" stroke-width="2.5">
+    <circle cx="51" cy="201" r="6.5"/>
+    <circle cx="81" cy="180" r="6.5"/>
+    <circle cx="106" cy="180" r="6.5"/>
+    <circle cx="132" cy="159" r="6.5"/>
+    <circle cx="160" cy="141" r="6.5"/>
+    <circle cx="187" cy="122" r="6.5"/>
+  </g>
+
+  <text x="270" y="125" font-family="Arial, Helvetica, sans-serif" font-size="92" font-weight="700" fill="url(#wordmark)">AI</text>
+  <text x="381" y="125" font-family="Arial, Helvetica, sans-serif" font-size="92" font-weight="500" fill="#F8FAFC">Stock</text>
+  <text x="647" y="125" font-family="Arial, Helvetica, sans-serif" font-size="92" font-weight="700" fill="url(#wordmark)">Analyses</text>
+
+  <line x1="257" y1="164" x2="1058" y2="164" stroke="url(#wordmark)" stroke-width="5"/>
+  <text
+    x="276"
+    y="220"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="38"
+    letter-spacing="12"
+    fill="#CBD5E1"
+  >AI-BASED STOCK ANALYSIS</text>
+</svg>
