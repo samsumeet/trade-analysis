@@ -197,7 +197,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
   return (
     <main className="pb-10">
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.16),transparent_28%),radial-gradient(circle_at_left,rgba(16,185,129,0.12),transparent_24%),linear-gradient(to_bottom,rgba(255,255,255,0.86),rgba(248,250,252,1))]" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.16),transparent_28%),radial-gradient(circle_at_left,rgba(16,185,129,0.12),transparent_24%),linear-gradient(to_bottom,rgba(255,255,255,0.86),rgba(248,250,252,1))] dark:bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.22),transparent_28%),radial-gradient(circle_at_left,rgba(16,185,129,0.14),transparent_24%),linear-gradient(to_bottom,rgba(2,6,23,0.92),rgba(2,8,23,1))]" />
         <SiteHeader
           navItems={[
             { href: "/", label: "Home" },
@@ -217,10 +217,10 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
               <div className="mt-4">
                 <DashboardStatus error={error} isLive={isLive} />
               </div>
-              <h1 className="mt-5 text-balance text-4xl font-semibold leading-tight text-slate-950 sm:text-5xl">
+              <h1 className="mt-5 text-balance text-4xl font-semibold leading-tight text-slate-950 dark:text-slate-50 sm:text-5xl">
                 Dedicated analysis workspace for {activeTicker}
               </h1>
-              <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">
                 The landing-page preview now expands into a full dashboard with the
                 same visual system, a routed analysis flow, and a deeper workspace
                 for signals, trade planning, and report review.
@@ -251,13 +251,13 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                   <Star className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />
                   {isFavorite ? "Saved to favorites" : "Add to favorites"}
                 </Button>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
                   Save up to {MAX_FAVORITES} favorite stocks in your browser.
                 </p>
               </div>
 
               <div className="mt-4">
-                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
                   Favorite stocks
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -272,8 +272,8 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                           onClick={() => selectTicker(ticker)}
                           className={`rounded-full px-3 py-1.5 text-sm transition ${
                             active
-                              ? "bg-slate-900 text-white"
-                              : "bg-white/80 text-slate-600 hover:bg-white"
+                              ? "bg-slate-900 text-white dark:bg-blue-500"
+                              : "bg-white/80 text-slate-600 hover:bg-white dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
                           }`}
                         >
                           {ticker}
@@ -281,7 +281,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                       );
                     })
                   ) : (
-                    <div className="rounded-full bg-white/80 px-3 py-1.5 text-sm text-slate-500">
+                    <div className="rounded-full bg-white/80 px-3 py-1.5 text-sm text-slate-500 dark:bg-slate-900 dark:text-slate-400">
                       No favorites saved yet
                     </div>
                   )}
@@ -295,19 +295,19 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                       {analysis.dailyChangePct >= 0 ? "+" : ""}
                       {analysis.dailyChangePct.toFixed(2)}% today
                     </Badge>
-                    <Badge variant="default" className="bg-white/80 text-slate-700">
+                    <Badge variant="default" className="bg-white/80 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
                       {analysis.companyName}
                     </Badge>
                   </>
                 ) : (
-                  <Badge variant="default" className="bg-white/80 text-slate-700">
+                  <Badge variant="default" className="bg-white/80 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
                     Waiting for live server response
                   </Badge>
                 )}
               </div>
             </div>
 
-            <Card className="glass-panel rounded-[32px] border-white/70 shadow-soft">
+            <Card className="glass-panel rounded-[32px] border-white/70 shadow-soft dark:border-slate-800">
               <CardContent className="p-5 sm:p-6">
                 <div className="rounded-[28px] border border-slate-200/70 bg-slate-950 p-5 text-white">
                   {analysis ? (
@@ -403,16 +403,16 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
         ) : analysis ? (
           <AnalysisDashboard analysis={analysis} mode="full" />
         ) : (
-          <Card className="overflow-hidden rounded-[32px] border-slate-200/70 bg-white/95 shadow-soft">
+          <Card className="overflow-hidden rounded-[32px] border-slate-200/70 bg-white/95 shadow-soft dark:border-slate-800 dark:bg-slate-900/90">
             <CardContent className="p-8 sm:p-10">
               <div className="mx-auto max-w-3xl text-center">
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
                   Live data required
                 </p>
-                <h3 className="mt-4 text-3xl font-semibold text-slate-950">
+                <h3 className="mt-4 text-3xl font-semibold text-slate-950 dark:text-slate-50">
                   We couldn&apos;t load live analysis for {activeTicker}
                 </h3>
-                <p className="mt-4 text-base leading-8 text-slate-600">
+                <p className="mt-4 text-base leading-8 text-slate-600 dark:text-slate-300">
                   The dashboard only displays real analysis from the server. Try the
                   request again once the backend is available.
                 </p>
@@ -431,18 +431,18 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
       <section id="report" className="container mt-24 scroll-mt-10">
         <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
           {isLoading ? (
-            <Card className="overflow-hidden rounded-[28px] border-slate-200/70">
+            <Card className="overflow-hidden rounded-[28px] border-slate-200/70 dark:border-slate-800">
               <CardContent className="space-y-5 p-6">
-                <div className="h-5 w-40 animate-pulse rounded-full bg-slate-200" />
-                <div className="h-10 w-3/4 animate-pulse rounded-2xl bg-slate-200" />
+                <div className="h-5 w-40 animate-pulse rounded-full bg-slate-200 dark:bg-slate-800" />
+                <div className="h-10 w-3/4 animate-pulse rounded-2xl bg-slate-200 dark:bg-slate-800" />
                 <div className="grid gap-4 sm:grid-cols-2">
                   {Array.from({ length: 6 }).map((_, index) => (
                     <div
                       key={index}
-                      className="space-y-3 rounded-2xl border border-slate-200 bg-white p-5"
+                      className="space-y-3 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-950/60"
                     >
-                      <div className="h-4 w-24 animate-pulse rounded-full bg-slate-200" />
-                      <div className="h-20 animate-pulse rounded-2xl bg-slate-100" />
+                      <div className="h-4 w-24 animate-pulse rounded-full bg-slate-200 dark:bg-slate-800" />
+                      <div className="h-20 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-900" />
                     </div>
                   ))}
                 </div>
@@ -452,7 +452,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
             <SampleReport analysis={analysis} />
           )}
           <div className="space-y-6">
-            <Card className="rounded-[28px] border-slate-200/70 bg-white/90">
+            <Card className="rounded-[28px] border-slate-200/70 bg-white/90 dark:border-slate-800 dark:bg-slate-900/85">
               <CardContent className="p-6">
                 <p className="text-sm font-semibold uppercase tracking-[0.16em] text-blue-600">
                   Execution checklist
@@ -462,25 +462,25 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                     ? Array.from({ length: 4 }).map((_, index) => (
                         <div
                           key={index}
-                          className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4"
+                          className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-950/60"
                         >
                           <div className="flex items-center justify-between gap-4">
-                            <div className="h-4 w-24 animate-pulse rounded-full bg-slate-200" />
-                            <div className="h-4 w-20 animate-pulse rounded-full bg-slate-200" />
+                            <div className="h-4 w-24 animate-pulse rounded-full bg-slate-200 dark:bg-slate-800" />
+                            <div className="h-4 w-20 animate-pulse rounded-full bg-slate-200 dark:bg-slate-800" />
                           </div>
-                          <div className="mt-3 h-12 animate-pulse rounded-2xl bg-slate-100" />
+                          <div className="mt-3 h-12 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-900" />
                         </div>
                       ))
                     : analysis.keyLevels.slice(0, 4).map((level) => (
                         <div
                           key={level.label}
-                          className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4"
+                          className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-950/60"
                         >
                           <div className="flex items-center justify-between gap-4">
-                            <p className="text-sm font-medium text-slate-900">{level.label}</p>
-                            <p className="text-sm font-semibold text-slate-950">{level.value}</p>
+                            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{level.label}</p>
+                            <p className="text-sm font-semibold text-slate-950 dark:text-slate-50">{level.value}</p>
                           </div>
-                          <p className="mt-2 text-sm leading-6 text-slate-500">{level.context}</p>
+                          <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">{level.context}</p>
                         </div>
                       ))}
                 </div>
@@ -534,7 +534,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
               </CardContent>
             </Card>
 
-            <Card className="rounded-[28px] border-slate-200/70 bg-white/90">
+            <Card className="rounded-[28px] border-slate-200/70 bg-white/90 dark:border-slate-800 dark:bg-slate-900/85">
               <CardContent className="p-6">
                 <p className="text-sm font-semibold uppercase tracking-[0.16em] text-blue-600">
                   Indicator stack
@@ -544,27 +544,27 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                     ? Array.from({ length: 5 }).map((_, index) => (
                         <div
                           key={index}
-                          className="rounded-2xl border border-slate-200 bg-white p-4"
+                          className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950/60"
                         >
                           <div className="flex items-center justify-between gap-4">
-                            <div className="h-4 w-28 animate-pulse rounded-full bg-slate-200" />
-                            <div className="h-6 w-20 animate-pulse rounded-full bg-slate-200" />
+                            <div className="h-4 w-28 animate-pulse rounded-full bg-slate-200 dark:bg-slate-800" />
+                            <div className="h-6 w-20 animate-pulse rounded-full bg-slate-200 dark:bg-slate-800" />
                           </div>
-                          <div className="mt-3 h-12 animate-pulse rounded-2xl bg-slate-100" />
+                          <div className="mt-3 h-12 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-900" />
                         </div>
                       ))
                     : analysis.indicators.map((indicator) => (
                         <div
                           key={indicator.name}
-                          className="rounded-2xl border border-slate-200 bg-white p-4"
+                          className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950/60"
                         >
                           <div className="flex items-center justify-between gap-4">
-                            <p className="text-sm font-medium text-slate-900">{indicator.name}</p>
-                            <Badge variant="default" className="bg-slate-100 text-slate-700">
+                            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{indicator.name}</p>
+                            <Badge variant="default" className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
                               {indicator.value}
                             </Badge>
                           </div>
-                          <p className="mt-2 text-sm leading-6 text-slate-500">
+                          <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
                             {indicator.description}
                           </p>
                         </div>

@@ -51,14 +51,14 @@ export function Pricing() {
           className={`rounded-[28px] border-slate-200/70 ${
             tier.featured
               ? "relative bg-slate-950 text-white shadow-panel"
-              : "bg-white/90"
+              : "bg-white/90 dark:border-slate-800 dark:bg-slate-900/85"
           }`}
         >
           <CardHeader>
-            <CardTitle className={tier.featured ? "text-white" : "text-slate-950"}>
+            <CardTitle className={tier.featured ? "text-white" : "text-slate-950 dark:text-slate-50"}>
               {tier.name}
             </CardTitle>
-            <p className={tier.featured ? "text-slate-300" : "text-slate-600"}>
+            <p className={tier.featured ? "text-slate-300" : "text-slate-600 dark:text-slate-300"}>
               {tier.description}
             </p>
             <div className="pt-2 text-4xl font-semibold">{tier.price}</div>
@@ -69,12 +69,14 @@ export function Pricing() {
                 <li
                   key={feature}
                   className={`flex items-start gap-3 text-sm leading-6 ${
-                    tier.featured ? "text-slate-200" : "text-slate-600"
+                    tier.featured ? "text-slate-200" : "text-slate-600 dark:text-slate-300"
                   }`}
                 >
                   <span
                     className={`mt-0.5 rounded-full p-1 ${
-                      tier.featured ? "bg-white/10 text-blue-300" : "bg-blue-50 text-blue-600"
+                      tier.featured
+                        ? "bg-white/10 text-blue-300"
+                        : "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300"
                     }`}
                   >
                     <Check className="h-3 w-3" />

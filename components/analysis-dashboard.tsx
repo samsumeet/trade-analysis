@@ -69,8 +69,8 @@ export function AnalysisDashboard({
 
   return (
     <section id="analysis-dashboard" className="scroll-mt-10">
-      <Card className="overflow-hidden rounded-[32px] border-slate-200/70 bg-white/90 shadow-soft">
-        <CardHeader className="border-b border-slate-100 bg-slate-950 text-white">
+      <Card className="overflow-hidden rounded-[32px] border-slate-200/70 bg-white/90 shadow-soft dark:border-slate-800 dark:bg-slate-900/90">
+        <CardHeader className="border-b border-slate-100 bg-slate-950 text-white dark:border-slate-800">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-sm uppercase tracking-[0.18em] text-blue-300">
@@ -116,15 +116,15 @@ export function AnalysisDashboard({
         <CardContent className="space-y-8 p-4 sm:p-6">
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {statCards.map(({ key, label, icon: Icon }) => (
-              <Card key={key} className="rounded-2xl border-slate-200/70 bg-slate-50/80 shadow-none">
+              <Card key={key} className="rounded-2xl border-slate-200/70 bg-slate-50/80 shadow-none dark:border-slate-800 dark:bg-slate-950/60">
                 <CardContent className="flex items-center justify-between p-5">
                   <div>
-                    <p className="text-sm text-slate-500">{label}</p>
-                    <p className="mt-1 text-lg font-semibold text-slate-950">
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>
+                    <p className="mt-1 text-lg font-semibold text-slate-950 dark:text-slate-50">
                       {getStatValue(analysis, key)}
                     </p>
                   </div>
-                  <div className="rounded-2xl bg-white p-2 text-blue-600">
+                  <div className="rounded-2xl bg-white p-2 text-blue-600 dark:bg-slate-900">
                     <Icon className="h-4 w-4" />
                   </div>
                 </CardContent>
@@ -175,9 +175,9 @@ export function AnalysisDashboard({
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2">
-            <Card className="rounded-[28px] border-slate-200/70 bg-white">
+            <Card className="rounded-[28px] border-slate-200/70 bg-white dark:border-slate-800 dark:bg-slate-950/80">
               <CardHeader>
-                <CardTitle className="text-slate-950">MACD histogram preview</CardTitle>
+                <CardTitle className="text-slate-950 dark:text-slate-50">MACD histogram preview</CardTitle>
               </CardHeader>
               <CardContent className="h-[260px] pt-0">
                 <ResponsiveContainer width="100%" height="100%">
@@ -210,9 +210,9 @@ export function AnalysisDashboard({
               </CardContent>
             </Card>
 
-            <Card className="rounded-[28px] border-slate-200/70 bg-white">
+            <Card className="rounded-[28px] border-slate-200/70 bg-white dark:border-slate-800 dark:bg-slate-950/80">
               <CardHeader>
-                <CardTitle className="text-slate-950">RSI line preview</CardTitle>
+                <CardTitle className="text-slate-950 dark:text-slate-50">RSI line preview</CardTitle>
               </CardHeader>
               <CardContent className="h-[260px] pt-0">
                 <ResponsiveContainer width="100%" height="100%">

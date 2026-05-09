@@ -39,7 +39,7 @@ const heroStats = [
 export function Hero({ activeTicker, setActiveTicker }: HeroProps) {
   return (
     <section className="relative overflow-hidden pt-8 sm:pt-12">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.14),transparent_26%),radial-gradient(circle_at_left,rgba(16,185,129,0.12),transparent_24%),linear-gradient(to_bottom,rgba(255,255,255,0.86),rgba(248,250,252,1))]" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.14),transparent_26%),radial-gradient(circle_at_left,rgba(16,185,129,0.12),transparent_24%),linear-gradient(to_bottom,rgba(255,255,255,0.86),rgba(248,250,252,1))] dark:bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.24),transparent_26%),radial-gradient(circle_at_left,rgba(16,185,129,0.18),transparent_24%),linear-gradient(to_bottom,rgba(2,6,23,0.92),rgba(2,8,23,1))]" />
       <div className="container">
         <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
           <div>
@@ -50,7 +50,7 @@ export function Hero({ activeTicker, setActiveTicker }: HeroProps) {
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45 }}
-              className="text-balance text-4xl font-semibold leading-tight text-slate-950 sm:text-5xl lg:text-6xl"
+              className="text-balance text-4xl font-semibold leading-tight text-slate-950 dark:text-slate-50 sm:text-5xl lg:text-6xl"
             >
               AI-Powered Trade Analysis for Smarter Stock Decisions
             </motion.h1>
@@ -58,7 +58,7 @@ export function Hero({ activeTicker, setActiveTicker }: HeroProps) {
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.08 }}
-              className="mt-6 max-w-2xl text-lg leading-8 text-slate-600"
+              className="mt-6 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300"
             >
               Analyze any ticker with technical indicators, catalysts, momentum,
               risk zones, and AI-generated scenarios. From ticker to full trade
@@ -77,7 +77,7 @@ export function Hero({ activeTicker, setActiveTicker }: HeroProps) {
                 quickTickersLabel="Popular large-cap tickers"
               />
             </div>
-            <p className="mt-4 text-sm text-slate-500">
+            <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
               Technical indicators, catalysts, risk zones, and AI-generated
               scenarios. AI analysis does not replace your judgment — it
               enhances your research workflow.
@@ -90,7 +90,7 @@ export function Hero({ activeTicker, setActiveTicker }: HeroProps) {
             transition={{ duration: 0.5, delay: 0.12 }}
             className="relative"
           >
-            <Card className="glass-panel rounded-[32px] border-white/70 shadow-soft">
+            <Card className="glass-panel rounded-[32px] border-white/70 shadow-soft dark:border-slate-800">
               <CardContent className="p-4 sm:p-6">
                 <div className="rounded-[28px] border border-slate-200/70 bg-slate-950 p-5 text-slate-50">
                   <div className="flex items-start justify-between gap-4">

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 
 import "./globals.css";
 
@@ -14,8 +15,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="font-sans">{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body className="font-sans">
+        <Script id="theme-init" strategy="beforeInteractive">
+          {`
+            (function() {
+              const storageKey = "trade-analysis:theme";
+              const stored = window.localStorage.getItem(storageKey);
+              const theme = stored === "dark" || stored === "light"
+                ? stored
+                : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+              document.documentElement.classList.toggle("dark", theme === "dark");
+              document.documentElement.style.colorScheme = theme;
+            })();
+          `}
+        </Script>
+        {children}
+      </body>
     </html>
   );
 }

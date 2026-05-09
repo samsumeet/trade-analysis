@@ -149,10 +149,13 @@ export function HomePage() {
               description: "Signals, risk, scenario notes, and favorites are arranged for faster scanning and cleaner navigation."
             }
           ].map((item) => (
-            <Card key={item.title} className="rounded-[28px] border-slate-200/70 bg-white/90">
+            <Card
+              key={item.title}
+              className="rounded-[28px] border-slate-200/70 bg-white/90 dark:border-slate-800 dark:bg-slate-900/80"
+            >
               <CardContent className="p-6">
-                <h3 className="text-xl font-semibold text-slate-950">{item.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-slate-600">{item.description}</p>
+                <h3 className="text-xl font-semibold text-slate-950 dark:text-slate-50">{item.title}</h3>
+                <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">{item.description}</p>
               </CardContent>
             </Card>
           ))}
@@ -168,13 +171,16 @@ export function HomePage() {
         />
         <div className="mt-10 grid gap-5 lg:grid-cols-3">
           {howItWorks.map((item) => (
-            <Card key={item.step} className="rounded-[28px] border-slate-200/70 bg-white/85">
+            <Card
+              key={item.step}
+              className="rounded-[28px] border-slate-200/70 bg-white/85 dark:border-slate-800 dark:bg-slate-900/80"
+            >
               <CardContent className="p-6">
                 <div className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
                   {item.step}
                 </div>
-                <h3 className="mt-4 text-xl font-semibold text-slate-950">{item.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-slate-600">{item.description}</p>
+                <h3 className="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-50">{item.title}</h3>
+                <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">{item.description}</p>
               </CardContent>
             </Card>
           ))}
@@ -189,12 +195,15 @@ export function HomePage() {
         />
         <div className="mt-10 grid gap-5 sm:grid-cols-2 xl:grid-cols-5">
           {featureGrid.map((feature) => (
-            <Card key={feature.title} className="rounded-[24px] border-slate-200/70 bg-white/85">
+            <Card
+              key={feature.title}
+              className="rounded-[24px] border-slate-200/70 bg-white/85 dark:border-slate-800 dark:bg-slate-900/80"
+            >
               <CardContent className="space-y-4 p-5">
-                <div className="w-fit rounded-2xl bg-slate-100 p-3 text-blue-600">
+                <div className="w-fit rounded-2xl bg-slate-100 p-3 text-blue-600 dark:bg-slate-800 dark:text-blue-300">
                   <feature.icon className="h-5 w-5" />
                 </div>
-                <p className="text-sm font-medium leading-6 text-slate-800">
+                <p className="text-sm font-medium leading-6 text-slate-800 dark:text-slate-100">
                   {feature.title}
                 </p>
               </CardContent>

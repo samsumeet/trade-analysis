@@ -192,9 +192,9 @@ export function TickerSearch({
         </div>
       ) : null}
 
-      <div className="flex flex-col gap-3 rounded-[28px] border border-white/70 bg-white/75 p-3 shadow-soft backdrop-blur xl:flex-row">
+      <div className="flex flex-col gap-3 rounded-[28px] border border-white/70 bg-white/75 p-3 shadow-soft backdrop-blur dark:border-slate-800 dark:bg-slate-900/80 xl:flex-row">
         <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
           <Input
             aria-label="Stock ticker"
             value={query}
@@ -211,7 +211,7 @@ export function TickerSearch({
               }
             }}
             placeholder="Search any US stock ticker, for example NVDA or AAPL"
-            className="h-14 border-white/80 bg-white pl-11 text-base"
+            className="h-14 border-white/80 bg-white pl-11 text-base dark:border-slate-700 dark:bg-slate-900"
             list="ticker-suggestions"
           />
           <datalist id="ticker-suggestions">
@@ -230,10 +230,10 @@ export function TickerSearch({
           </Button>
         </div>
       </div>
-      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+      {error ? <p className="text-sm text-rose-600 dark:text-rose-400">{error}</p> : null}
       {quickTickers.length > 0 ? (
         <div>
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
             {quickTickersLabel}
           </p>
           <div className="flex flex-wrap gap-2">
@@ -251,8 +251,8 @@ export function TickerSearch({
                   }}
                   className={`rounded-full px-3 py-1.5 text-sm transition ${
                     isActive
-                      ? "bg-slate-900 text-white"
-                      : "bg-white/80 text-slate-600 hover:bg-white"
+                      ? "bg-slate-900 text-white dark:bg-blue-500"
+                      : "bg-white/80 text-slate-600 hover:bg-white dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
                   }`}
                 >
                   {ticker}
