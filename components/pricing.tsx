@@ -17,7 +17,7 @@ const tiers = [
   },
   {
     name: "Pro Trader",
-    price: "$39/mo",
+    price: "$20/mo",
     description: "Built for active traders who want structured entries, exits, and risk maps.",
     featured: true,
     features: [
@@ -30,7 +30,7 @@ const tiers = [
   },
   {
     name: "AI Research Desk",
-    price: "$149/mo",
+    //price: "$100/mo",
     description: "Advanced multi-scenario research workflows for serious retail operators.",
     features: [
       "Deep multi-timeframe analysis",
