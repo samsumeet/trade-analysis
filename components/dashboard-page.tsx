@@ -238,6 +238,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                   sampleReportTargetId="report"
                   quickTickers={favorites}
                   quickTickersLabel="Favorites"
+                  analysisLoading={isLoading}
                 />
               </div>
 
