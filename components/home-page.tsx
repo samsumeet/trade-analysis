@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   Activity,
   BarChart3,
@@ -15,16 +15,13 @@ import {
   TriangleAlert
 } from "lucide-react";
 
-import { AnalysisDashboard } from "@/components/analysis-dashboard";
 import { FeatureCard } from "@/components/feature-card";
 import { Footer } from "@/components/footer";
 import { Hero } from "@/components/hero";
 import { Pricing } from "@/components/pricing";
-import { SampleReport } from "@/components/sample-report";
 import { SectionHeading } from "@/components/section-heading";
 import { SiteHeader } from "@/components/site-header";
 import { Card, CardContent } from "@/components/ui/card";
-import { stockAnalyses } from "@/data/mock-analysis";
 
 const infrastructureFeatures = [
   {
@@ -102,18 +99,12 @@ const featureGrid = [
 export function HomePage() {
   const [activeTicker, setActiveTicker] = useState("NVDA");
 
-  const currentAnalysis = useMemo(
-    () => stockAnalyses[activeTicker] ?? stockAnalyses.NVDA,
-    [activeTicker]
-  );
-
   return (
     <main className="pb-10">
       <SiteHeader
         navItems={[
           { href: "#features", label: "Features" },
-          { href: "#analysis-dashboard", label: "Dashboard" },
-          { href: "#sample-report", label: "Sample Report" },
+          { href: "#workflow-overview", label: "Workflow" },
           { href: "#pricing", label: "Pricing" }
         ]}
       />
@@ -137,14 +128,34 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="container mt-24">
+      <section id="workflow-overview" className="container mt-24">
         <SectionHeading
-          eyebrow="Dashboard Preview"
-          title="An interactive preview of the analysis traders receive"
-          description="Detailed technical, momentum, and risk framing with key levels, scenarios, and a plain-English AI read of the setup."
+          eyebrow="Live Workflow"
+          title="A cleaner live-analysis workflow built around real server data"
+          description="Open the dashboard, load a live ticker analysis, review indicators, key levels, scenario framing, and trade structure in one place."
         />
-        <div className="mt-10">
-          <AnalysisDashboard analysis={currentAnalysis} mode="preview" />
+        <div className="mt-10 grid gap-5 lg:grid-cols-3">
+          {[
+            {
+              title: "Instant loading state",
+              description: "A stock-themed full-screen loader appears immediately while the server prepares the analysis."
+            },
+            {
+              title: "Live dashboard only",
+              description: "The dashboard now waits for real backend output instead of filling the screen with seeded demo analysis."
+            },
+            {
+              title: "Readable research layout",
+              description: "Signals, risk, scenario notes, and favorites are arranged for faster scanning and cleaner navigation."
+            }
+          ].map((item) => (
+            <Card key={item.title} className="rounded-[28px] border-slate-200/70 bg-white/90">
+              <CardContent className="p-6">
+                <h3 className="text-xl font-semibold text-slate-950">{item.title}</h3>
+                <p className="mt-3 text-sm leading-7 text-slate-600">{item.description}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </section>
 
@@ -189,17 +200,6 @@ export function HomePage() {
               </CardContent>
             </Card>
           ))}
-        </div>
-      </section>
-
-      <section className="container mt-24">
-        <SectionHeading
-          eyebrow="Sample Report"
-          title="A polished report surface that feels like a professional analyst terminal"
-          description="Executive summary, current setup, momentum read, trade plan, risk notes, and confidence framing in one clear layout."
-        />
-        <div className="mt-10">
-          <SampleReport analysis={currentAnalysis} />
         </div>
       </section>
 

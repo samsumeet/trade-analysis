@@ -10,12 +10,12 @@ interface SampleReportProps {
 
 export function SampleReport({ analysis }: SampleReportProps) {
   return (
-    <Card id="sample-report" className="overflow-hidden rounded-[28px] border-slate-200/70">
+    <Card id="analysis-brief" className="overflow-hidden rounded-[28px] border-slate-200/70">
       <CardHeader className="border-b border-slate-100 bg-slate-950 text-white">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-sm uppercase tracking-[0.18em] text-blue-300">
-              Sample AI Report
+              Live Analysis Brief
             </p>
             <CardTitle className="mt-2 text-2xl text-white">
               {analysis.symbol} Executive Trade Brief

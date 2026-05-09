@@ -23,7 +23,7 @@ export function DashboardStatus({ error, isLive }: DashboardStatusProps) {
       className="max-w-full gap-2 whitespace-normal text-left leading-5"
     >
       <WifiOff className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-      Using fallback data{error ? `: ${error}` : ""}
+      Live analysis unavailable{error ? `: ${error}` : ""}
     </Badge>
   );
 }

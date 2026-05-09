@@ -132,8 +132,8 @@ export function AnalysisDashboard({
             ))}
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
-            <motion.div layout className="dashboard-panel rounded-[28px] p-5">
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+            <motion.div layout className="dashboard-panel rounded-[28px] p-5 sm:p-6">
               <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h4 className="text-lg font-semibold text-white">
@@ -162,7 +162,9 @@ export function AnalysisDashboard({
                   ))}
                 </div>
               </div>
-              <PriceChart data={analysis.priceSeries} />
+              <div className="rounded-[24px] border border-white/10 bg-white/[0.03] px-2 py-3 sm:px-3">
+                <PriceChart data={analysis.priceSeries} />
+              </div>
             </motion.div>
 
             <div className="grid gap-4">

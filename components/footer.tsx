@@ -1,4 +1,4 @@
-const footerLinks = ["Features", "Pricing", "Sample Report", "Disclaimer", "Contact"];
+const footerLinks = ["Features", "Pricing", "Workflow", "Disclaimer", "Contact"];
 
 export function Footer() {
   return (

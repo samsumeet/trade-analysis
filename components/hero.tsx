@@ -72,6 +72,7 @@ export function Hero({ activeTicker, setActiveTicker }: HeroProps) {
                 onAnalyze={(ticker) => {
                   window.location.href = `/dashboard?ticker=${ticker}`;
                 }}
+                sampleReportTargetId="workflow-overview"
                 quickTickers={["NVDA", "AAPL", "MSFT", "AMZN", "TSLA"]}
                 quickTickersLabel="Popular large-cap tickers"
               />

@@ -26,7 +26,7 @@ export function TickerSearch({
   setActiveTicker,
   onAnalyze,
   onTickerSelect,
-  sampleReportTargetId = "sample-report",
+  sampleReportTargetId = "analysis-brief",
   quickTickers = [],
   quickTickersLabel = "Quick access",
   analysisLoading = false
@@ -226,7 +226,7 @@ export function TickerSearch({
             <ArrowRight className="h-4 w-4" />
           </Button>
           <Button variant="secondary" size="lg" onClick={handleSampleReport}>
-            View Sample Report
+            View Analysis Brief
           </Button>
         </div>
       </div>

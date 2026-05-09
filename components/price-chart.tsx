@@ -18,9 +18,9 @@ interface PriceChartProps {
 
 export function PriceChart({ data }: PriceChartProps) {
   return (
-    <div className="h-[320px] w-full">
+    <div className="mx-auto h-[280px] w-full max-w-4xl sm:h-[300px] xl:h-[320px]">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ left: 0, right: 8, top: 8, bottom: 0 }}>
+        <LineChart data={data} margin={{ left: 0, right: 8, top: 8, bottom: 8 }}>
           <CartesianGrid stroke="rgba(148,163,184,0.16)" strokeDasharray="3 3" />
           <XAxis
             dataKey="label"
@@ -32,6 +32,7 @@ export function PriceChart({ data }: PriceChartProps) {
             tick={{ fill: "#94a3b8", fontSize: 12 }}
             axisLine={false}
             tickLine={false}
+            width={48}
             domain={["dataMin - 2", "dataMax + 4"]}
           />
           <Tooltip

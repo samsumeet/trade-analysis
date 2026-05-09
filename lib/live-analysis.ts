@@ -1,4 +1,4 @@
-import { getAnalysisTicker, getFallbackAnalysis, stockAnalyses } from "@/data/mock-analysis";
+import { getAnalysisTicker } from "@/data/mock-analysis";
 import {
   HistogramPoint,
   IndicatorStatus,
@@ -16,9 +16,48 @@ const ANALYZE_API_URL = "https://trade-analysis-api-two.vercel.app/api/analyze";
 const ANALYZE_API_TIMEOUT_MS = 15000;
 
 interface FetchAnalysisResult {
-  analysis: StockAnalysisData;
+  analysis: StockAnalysisData | null;
   error?: string;
   isLive: boolean;
+}
+
+export function createEmptyAnalysis(ticker: string): StockAnalysisData {
+  const normalizedTicker = getAnalysisTicker(ticker);
+
+  return {
+    symbol: normalizedTicker,
+    companyName: "",
+    currentPrice: 0,
+    dailyChangePct: 0,
+    open: 0,
+    dayRange: "",
+    fiftyTwoWeekRange: "",
+    marketCap: 0,
+    trendBias: "",
+    confidenceScore: 0,
+    priceSeries: [],
+    macdSeries: [],
+    rsiSeries: [],
+    indicators: [],
+    keyLevels: [],
+    tradePlan: [],
+    bullCase: {
+      title: "Bullish scenario",
+      summary: "",
+      bullets: []
+    },
+    bearCase: {
+      title: "Bearish scenario",
+      summary: "",
+      bullets: []
+    },
+    aiSummary: "",
+    executiveSummary: "",
+    currentSetup: "",
+    momentumRead: "",
+    riskNotes: "",
+    reportSections: []
+  };
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -307,7 +346,7 @@ function normalizeReportSections(
 
 function normalizeAnalysis(ticker: string, raw: unknown): StockAnalysisData {
   const normalizedTicker = getAnalysisTicker(ticker);
-  const fallback = getFallbackAnalysis(normalizedTicker);
+  const fallback = createEmptyAnalysis(normalizedTicker);
   const payloadSource = isObject(raw)
     ? isObject(raw.data)
       ? isObject(raw.data[normalizedTicker])
@@ -471,7 +510,7 @@ export async function fetchLiveAnalysis(ticker: string): Promise<FetchAnalysisRe
           : "Unknown API error";
 
     return {
-      analysis: getFallbackAnalysis(normalizedTicker),
+      analysis: null,
       error: message,
       isLive: false
     };

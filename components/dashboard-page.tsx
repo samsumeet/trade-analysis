@@ -20,7 +20,6 @@ import { TickerSearch } from "@/components/ticker-search";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { getFallbackAnalysis } from "@/data/mock-analysis";
 import { formatCurrency } from "@/lib/utils";
 import { StockAnalysisData } from "@/types/stock";
 
@@ -29,7 +28,7 @@ interface DashboardPageProps {
 }
 
 interface AnalysisApiResponse {
-  analysis: StockAnalysisData;
+  analysis: StockAnalysisData | null;
   error?: string;
   isLive: boolean;
 }
@@ -62,9 +61,7 @@ const dashboardCards = [
 
 export function DashboardPage({ initialTicker }: DashboardPageProps) {
   const [activeTicker, setActiveTicker] = useState(initialTicker);
-  const [analysis, setAnalysis] = useState<StockAnalysisData>(
-    getFallbackAnalysis(initialTicker)
-  );
+  const [analysis, setAnalysis] = useState<StockAnalysisData | null>(null);
   const [error, setError] = useState<string | undefined>(undefined);
   const [isLive, setIsLive] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -140,7 +137,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
           return;
         }
 
-        setAnalysis(getFallbackAnalysis(activeTicker));
+        setAnalysis(null);
         setError(fetchError instanceof Error ? fetchError.message : "Failed to load analysis");
         setIsLive(false);
       } finally {
@@ -161,7 +158,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
     }
 
     setActiveTicker(ticker);
-    setAnalysis(getFallbackAnalysis(ticker));
+    setAnalysis(null);
     setIsLoading(true);
     window.history.replaceState(null, "", `/dashboard?ticker=${ticker}`);
   };
@@ -169,7 +166,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
   const refreshTicker = (ticker: string) => {
     if (ticker === activeTicker) {
       setIsLoading(true);
-      setAnalysis(getFallbackAnalysis(ticker));
+      setAnalysis(null);
       setError(undefined);
       setIsLive(false);
       setReloadKey((current) => current + 1);
@@ -221,7 +218,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                 <DashboardStatus error={error} isLive={isLive} />
               </div>
               <h1 className="mt-5 text-balance text-4xl font-semibold leading-tight text-slate-950 sm:text-5xl">
-                Dedicated analysis workspace for {analysis.symbol}
+                Dedicated analysis workspace for {activeTicker}
               </h1>
               <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
                 The landing-page preview now expands into a full dashboard with the
@@ -235,7 +232,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                   setActiveTicker={setActiveTicker}
                   onAnalyze={refreshTicker}
                   onTickerSelect={selectTicker}
-                  sampleReportTargetId="report"
+                  sampleReportTargetId="analysis-brief"
                   quickTickers={favorites}
                   quickTickersLabel="Favorites"
                   analysisLoading={isLoading}
@@ -292,65 +289,107 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
               </div>
 
               <div className="mt-8 flex flex-wrap gap-3">
-                <Badge variant={analysis.dailyChangePct >= 0 ? "bullish" : "bearish"}>
-                  {analysis.dailyChangePct >= 0 ? "+" : ""}
-                  {analysis.dailyChangePct.toFixed(2)}% today
-                </Badge>
-                <Badge variant="default" className="bg-white/80 text-slate-700">
-                  {analysis.companyName}
-                </Badge>
+                {analysis ? (
+                  <>
+                    <Badge variant={analysis.dailyChangePct >= 0 ? "bullish" : "bearish"}>
+                      {analysis.dailyChangePct >= 0 ? "+" : ""}
+                      {analysis.dailyChangePct.toFixed(2)}% today
+                    </Badge>
+                    <Badge variant="default" className="bg-white/80 text-slate-700">
+                      {analysis.companyName}
+                    </Badge>
+                  </>
+                ) : (
+                  <Badge variant="default" className="bg-white/80 text-slate-700">
+                    Waiting for live server response
+                  </Badge>
+                )}
               </div>
             </div>
 
             <Card className="glass-panel rounded-[32px] border-white/70 shadow-soft">
               <CardContent className="p-5 sm:p-6">
                 <div className="rounded-[28px] border border-slate-200/70 bg-slate-950 p-5 text-white">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-sm uppercase tracking-[0.16em] text-blue-300">
-                        Live workspace
-                      </p>
-                      <h2 className="mt-3 text-3xl font-semibold">{analysis.symbol}</h2>
-                      <p className="mt-2 text-sm leading-6 text-slate-400">
-                        {analysis.aiSummary}
-                      </p>
-                    </div>
-                    <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">
-                      Confidence {analysis.confidenceScore}/100
-                    </div>
-                  </div>
-
-                  <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                    {dashboardCards.map(({ icon: Icon, label, getValue }) => (
-                      <div
-                        key={label}
-                        className="rounded-2xl border border-white/10 bg-white/5 p-4"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="rounded-2xl bg-white/10 p-2">
-                            <Icon className="h-4 w-4 text-blue-300" />
-                          </div>
-                          <div>
-                            <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
-                              {label}
-                            </p>
-                            <p className="mt-1 text-sm font-medium text-white">
-                              {getValue(analysis)}
-                            </p>
-                          </div>
+                  {analysis ? (
+                    <>
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="text-sm uppercase tracking-[0.16em] text-blue-300">
+                            Live workspace
+                          </p>
+                          <h2 className="mt-3 text-3xl font-semibold">{analysis.symbol}</h2>
+                          <p className="mt-2 text-sm leading-6 text-slate-400">
+                            {analysis.aiSummary}
+                          </p>
+                        </div>
+                        <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">
+                          Confidence {analysis.confidenceScore}/100
                         </div>
                       </div>
-                    ))}
-                  </div>
 
-                  <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4">
-                    <div className="flex items-start gap-3">
-                      <ArrowUpRight className="mt-0.5 h-4 w-4 text-emerald-300" />
-                      <p className="text-sm leading-7 text-slate-200">
-                        Execution focus: {analysis.tradePlan[0]?.note}
-                      </p>
+                      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                        {dashboardCards.map(({ icon: Icon, label, getValue }) => (
+                          <div
+                            key={label}
+                            className="rounded-2xl border border-white/10 bg-white/5 p-4"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="rounded-2xl bg-white/10 p-2">
+                                <Icon className="h-4 w-4 text-blue-300" />
+                              </div>
+                              <div>
+                                <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
+                                  {label}
+                                </p>
+                                <p className="mt-1 text-sm font-medium text-white">
+                                  {getValue(analysis)}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4">
+                        <div className="flex items-start gap-3">
+                          <ArrowUpRight className="mt-0.5 h-4 w-4 text-emerald-300" />
+                          <p className="text-sm leading-7 text-slate-200">
+                            Execution focus: {analysis.tradePlan[0]?.note}
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="space-y-5">
+                      <div>
+                        <p className="text-sm uppercase tracking-[0.16em] text-blue-300">
+                          Live workspace
+                        </p>
+                        <h2 className="mt-3 text-3xl font-semibold">{activeTicker}</h2>
+                        <p className="mt-3 max-w-xl text-sm leading-7 text-slate-300">
+                          No live analysis is available right now. Retry the request and the
+                          dashboard will populate as soon as the server responds.
+                        </p>
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {["Price structure", "Risk levels", "Momentum", "Trade thesis"].map((item) => (
+                          <div
+                            key={item}
+                            className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-300"
+                          >
+                            {item} will appear when live data arrives.
+                          </div>
+                        ))}
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => refreshTicker(activeTicker)}
+                        className="w-fit"
+                      >
+                        Retry Live Analysis
+                      </Button>
                     </div>
-                  </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -361,11 +400,34 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
       <section id="dashboard" className="container mt-8 scroll-mt-10">
         {isLoading ? (
           <DashboardLoader ticker={activeTicker} />
-        ) : (
+        ) : analysis ? (
           <AnalysisDashboard analysis={analysis} mode="full" />
+        ) : (
+          <Card className="overflow-hidden rounded-[32px] border-slate-200/70 bg-white/95 shadow-soft">
+            <CardContent className="p-8 sm:p-10">
+              <div className="mx-auto max-w-3xl text-center">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
+                  Live data required
+                </p>
+                <h3 className="mt-4 text-3xl font-semibold text-slate-950">
+                  We couldn&apos;t load live analysis for {activeTicker}
+                </h3>
+                <p className="mt-4 text-base leading-8 text-slate-600">
+                  The dashboard only displays real analysis from the server. Try the
+                  request again once the backend is available.
+                </p>
+                <div className="mt-8 flex justify-center">
+                  <Button type="button" onClick={() => refreshTicker(activeTicker)}>
+                    Retry Live Analysis
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </section>
 
+      {analysis ? (
       <section id="report" className="container mt-24 scroll-mt-10">
         <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
           {isLoading ? (
@@ -513,6 +575,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
           </div>
         </div>
       </section>
+      ) : null}
 
       <div className="container mt-20">
         <Footer />
