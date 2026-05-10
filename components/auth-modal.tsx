@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { LockKeyhole, Mail, UserRound } from "lucide-react";
 
 import { useAuth } from "@/components/auth-provider";
@@ -17,6 +17,8 @@ interface AuthModalProps {
 }
 
 type AuthMode = "google" | "register" | "login";
+const GOOGLE_IDENTITY_SCRIPT_ID = "google-identity-services";
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
 export function AuthModal({
   isOpen,
@@ -32,6 +34,74 @@ export function AuthModal({
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [googleReady, setGoogleReady] = useState(false);
+  const googleButtonRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!isOpen || mode !== "google" || !GOOGLE_CLIENT_ID) {
+      return;
+    }
+
+    const renderGoogleButton = () => {
+      if (!window.google?.accounts.id || !googleButtonRef.current) {
+        return;
+      }
+
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: async (response) => {
+          if (!response.credential) {
+            setError("Google did not return a credential.");
+            return;
+          }
+
+          setError("");
+          setIsSubmitting(true);
+
+          try {
+            await loginWithGoogle(response.credential);
+            onSuccess?.();
+            onClose();
+          } catch (submitError) {
+            setError(submitError instanceof Error ? submitError.message : "Google sign-in failed.");
+          } finally {
+            setIsSubmitting(false);
+          }
+        }
+      });
+
+      googleButtonRef.current.innerHTML = "";
+      window.google.accounts.id.renderButton(googleButtonRef.current, {
+        theme: "outline",
+        size: "large",
+        type: "standard",
+        text: "continue_with",
+        shape: "pill",
+        width: 320
+      });
+      setGoogleReady(true);
+    };
+
+    const existingScript = document.getElementById(GOOGLE_IDENTITY_SCRIPT_ID) as HTMLScriptElement | null;
+
+    if (existingScript) {
+      if (window.google?.accounts.id) {
+        renderGoogleButton();
+      } else {
+        existingScript.addEventListener("load", renderGoogleButton, { once: true });
+      }
+
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = GOOGLE_IDENTITY_SCRIPT_ID;
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = renderGoogleButton;
+    document.head.appendChild(script);
+  }, [isOpen, loginWithGoogle, mode, onClose, onSuccess]);
 
   if (!isOpen) {
     return null;
@@ -43,7 +113,7 @@ export function AuthModal({
 
     try {
       if (mode === "google") {
-        await loginWithGoogle({ name, email });
+        return;
       } else if (mode === "register") {
         await register({ name, email, password });
       } else {
@@ -109,7 +179,7 @@ export function AuthModal({
             </div>
 
             <div className="mt-6 space-y-4">
-              {mode !== "login" ? (
+              {mode === "register" ? (
                 <FieldRow icon={UserRound}>
                   <Input
                     value={name}
@@ -119,14 +189,37 @@ export function AuthModal({
                 </FieldRow>
               ) : null}
 
-              <FieldRow icon={Mail}>
-                <Input
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder={mode === "google" ? "yourname@gmail.com" : "Email address"}
-                  type="email"
-                />
-              </FieldRow>
+              {mode === "google" ? (
+                <div className="rounded-3xl border border-slate-200 bg-slate-50/80 p-5 dark:border-slate-800 dark:bg-slate-900/70">
+                  <p className="text-sm leading-7 text-slate-600 dark:text-slate-300">
+                    Continue with your Google account to create or access your AI Stock Analyses profile.
+                  </p>
+                  {GOOGLE_CLIENT_ID ? (
+                    <div className="mt-5">
+                      <div ref={googleButtonRef} className="min-h-11" />
+                      {!googleReady ? (
+                        <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
+                          Loading Google sign-in...
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <p className="mt-4 text-sm text-amber-600 dark:text-amber-400">
+                      Google sign-in is not configured yet. Set `NEXT_PUBLIC_GOOGLE_CLIENT_ID`
+                      in the frontend app to enable it.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <FieldRow icon={Mail}>
+                  <Input
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    placeholder="Email address"
+                    type="email"
+                  />
+                </FieldRow>
+              )}
 
               {mode !== "google" ? (
                 <FieldRow icon={LockKeyhole}>
@@ -145,15 +238,15 @@ export function AuthModal({
             ) : null}
 
             <div className="mt-6 flex flex-wrap gap-3">
-              <Button type="button" onClick={submit} disabled={isSubmitting}>
-                {isSubmitting
-                  ? "Please wait..."
-                  : mode === "google"
-                    ? "Continue with Gmail"
+              {mode !== "google" ? (
+                <Button type="button" onClick={submit} disabled={isSubmitting}>
+                  {isSubmitting
+                    ? "Please wait..."
                     : mode === "register"
                       ? "Create account"
                       : "Log in"}
-              </Button>
+                </Button>
+              ) : null}
               <Button type="button" variant="secondary" onClick={onClose}>
                 Maybe later
               </Button>
@@ -163,6 +256,25 @@ export function AuthModal({
       </Card>
     </div>
   );
+}
+
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (options: {
+            client_id: string;
+            callback: (response: { credential?: string }) => void;
+          }) => void;
+          renderButton: (
+            parent: HTMLElement,
+            options: Record<string, string | number>
+          ) => void;
+        };
+      };
+    };
+  }
 }
 
 function FieldRow({

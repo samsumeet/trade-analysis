@@ -1,4 +1,4 @@
-const DEFAULT_BACKEND_API_URL = "http://127.0.0.1:3001";
+const DEFAULT_BACKEND_API_URL = "http://localhost:3001";
 
 export function getBackendApiBaseUrl() {
   return (

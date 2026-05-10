@@ -36,7 +36,7 @@ type AuthContextValue = {
   setAllowance: (allowance: AnalysisAllowance | null) => void;
   login: (input: { email: string; password: string }) => Promise<void>;
   register: (input: { name: string; email: string; password: string }) => Promise<void>;
-  loginWithGoogle: (input: { name: string; email: string }) => Promise<void>;
+  loginWithGoogle: (credential: string) => Promise<void>;
   logout: () => Promise<void>;
   startUpgradeCheckout: (input: {
     cardholderName: string;
@@ -65,6 +65,7 @@ async function handleAuthRequest(
     error?: string;
     token?: string;
     user?: AuthUser;
+    allowance?: AnalysisAllowance | null;
   };
 
   if (!response.ok || !payload.token || !payload.user) {
@@ -73,7 +74,8 @@ async function handleAuthRequest(
 
   return {
     token: payload.token,
-    user: payload.user
+    user: payload.user,
+    allowance: payload.allowance ?? null
   };
 }
 
@@ -191,13 +193,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAllowance(session.allowance ?? null);
   };
 
-  const loginWithGoogle = async (input: { name: string; email: string }) => {
+  const loginWithGoogle = async (credential: string) => {
     const session = await handleAuthRequest("/api/auth/google", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(input)
+      body: JSON.stringify({ credential })
     });
 
     saveSession(session);
