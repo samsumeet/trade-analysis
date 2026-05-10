@@ -32,6 +32,7 @@ type AuthContextValue = {
   guestUsage: GuestUsage | null;
   allowance: AnalysisAllowance | null;
   isAuthenticated: boolean;
+  isHydrated: boolean;
   setGuestUsage: (usage: GuestUsage | null) => void;
   setAllowance: (allowance: AnalysisAllowance | null) => void;
   login: (input: { email: string; password: string }) => Promise<void>;
@@ -85,6 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [guestId, setGuestId] = useState("");
   const [guestUsage, setGuestUsage] = useState<GuestUsage | null>(null);
   const [allowance, setAllowance] = useState<AnalysisAllowance | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -102,6 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const storedSession = window.localStorage.getItem(AUTH_STORAGE_KEY);
 
       if (!storedSession) {
+        setIsHydrated(true);
         return;
       }
 
@@ -154,6 +157,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setAllowance(null);
     }
+
+    setIsHydrated(true);
 
     return () => {
       isMounted = false;
@@ -291,6 +296,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       guestUsage,
       allowance,
       isAuthenticated: Boolean(user && token),
+      isHydrated,
       setGuestUsage,
       setAllowance,
       login,
@@ -300,7 +306,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       startUpgradeCheckout,
       confirmUpgradeCheckout
     }),
-    [allowance, guestId, guestUsage, token, user]
+    [allowance, guestId, guestUsage, isHydrated, token, user]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

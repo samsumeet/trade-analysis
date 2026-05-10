@@ -165,19 +165,24 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
           setAllowance(payload.allowance);
         }
 
-        if (!response.ok || payload.authRequired) {
+        if (!response.ok || payload.authRequired || payload.paywallRequired) {
           setAnalysis(null);
           setError(payload.error ?? `Request failed with ${response.status}`);
           setIsLive(false);
           setRequiresAuth(Boolean(payload.authRequired));
           setRequiresUpgrade(Boolean(payload.paywallRequired));
 
-          if (payload.authRequired) {
-            setIsAuthModalOpen(true);
-          }
-
           if (payload.paywallRequired) {
+            // Daily limit exhausted — always show upgrade prompt
             setIsUpgradeModalOpen(true);
+          } else if (payload.authRequired) {
+            if (isAuthenticated) {
+              // User is already logged in but hit a limit — show upgrade, not login
+              setRequiresUpgrade(true);
+              setIsUpgradeModalOpen(true);
+            } else {
+              setIsAuthModalOpen(true);
+            }
           }
 
           return;
@@ -496,28 +501,6 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
           <DashboardLoader ticker={activeTicker} />
         ) : analysis ? (
           <AnalysisDashboard analysis={analysis} mode="full" />
-        ) : requiresAuth ? (
-          <Card className="overflow-hidden rounded-[32px] border-slate-200/70 bg-white/95 shadow-soft dark:border-slate-800 dark:bg-slate-900/90">
-            <CardContent className="p-8 sm:p-10">
-              <div className="mx-auto max-w-3xl text-center">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
-                  Authentication required
-                </p>
-                <h3 className="mt-4 text-3xl font-semibold text-slate-950 dark:text-slate-50">
-                  Your free guest analysis has already been used
-                </h3>
-                <p className="mt-4 text-base leading-8 text-slate-600 dark:text-slate-300">
-                  Sign in with Gmail or create an account to unlock unlimited live
-                  stock analysis beyond {guestUsage?.firstTicker ?? "your first ticker"}.
-                </p>
-                <div className="mt-8 flex justify-center">
-                  <Button type="button" onClick={() => setIsAuthModalOpen(true)}>
-                    Continue to Sign In
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         ) : requiresUpgrade ? (
           <Card className="overflow-hidden rounded-[32px] border-slate-200/70 bg-white/95 shadow-soft dark:border-slate-800 dark:bg-slate-900/90">
             <CardContent className="p-8 sm:p-10">
@@ -537,6 +520,50 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                     Upgrade to Paid
                   </Button>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : requiresAuth ? (
+          <Card className="overflow-hidden rounded-[32px] border-slate-200/70 bg-white/95 shadow-soft dark:border-slate-800 dark:bg-slate-900/90">
+            <CardContent className="p-8 sm:p-10">
+              <div className="mx-auto max-w-3xl text-center">
+                {isAuthenticated ? (
+                  <>
+                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
+                      Daily free limit reached
+                    </p>
+                    <h3 className="mt-4 text-3xl font-semibold text-slate-950 dark:text-slate-50">
+                      Your free account has used all 3 analyses for today
+                    </h3>
+                    <p className="mt-4 text-base leading-8 text-slate-600 dark:text-slate-300">
+                      Upgrade to the paid plan to remove the daily cap and analyze any
+                      number of stocks.
+                    </p>
+                    <div className="mt-8 flex justify-center">
+                      <Button type="button" onClick={() => setIsUpgradeModalOpen(true)}>
+                        Upgrade to Paid
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
+                      Authentication required
+                    </p>
+                    <h3 className="mt-4 text-3xl font-semibold text-slate-950 dark:text-slate-50">
+                      Your free guest analysis has already been used
+                    </h3>
+                    <p className="mt-4 text-base leading-8 text-slate-600 dark:text-slate-300">
+                      Sign in with Gmail or create an account to unlock unlimited live
+                      stock analysis beyond {guestUsage?.firstTicker ?? "your first ticker"}.
+                    </p>
+                    <div className="mt-8 flex justify-center">
+                      <Button type="button" onClick={() => setIsAuthModalOpen(true)}>
+                        Continue to Sign In
+                      </Button>
+                    </div>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>

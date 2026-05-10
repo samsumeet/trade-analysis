@@ -14,6 +14,7 @@ interface AuthModalProps {
   onSuccess?: () => void;
   title?: string;
   description?: string;
+  initialMode?: AuthMode;
 }
 
 type AuthMode = "google" | "register" | "login";
@@ -25,10 +26,11 @@ export function AuthModal({
   onClose,
   onSuccess,
   title = "Sign in to unlock unlimited stock analysis",
-  description = "You can explore one stock analysis without logging in. Create an account or continue with Gmail to analyze more tickers and keep your access synced."
+  description = "You can explore one stock analysis without logging in. Create an account or continue with Gmail to analyze more tickers and keep your access synced.",
+  initialMode = "google"
 }: AuthModalProps) {
   const { login, register, loginWithGoogle } = useAuth();
-  const [mode, setMode] = useState<AuthMode>("google");
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

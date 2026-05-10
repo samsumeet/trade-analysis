@@ -15,7 +15,7 @@ import { AnalysisAllowance, AuthUser, GuestUsage } from "@/types/auth";
 import { getBackendApiBaseUrl } from "@/lib/backend-api";
 
 const ANALYZE_API_URL = `${getBackendApiBaseUrl()}/api/analyze`;
-const ANALYZE_API_TIMEOUT_MS = 15000;
+const ANALYZE_API_TIMEOUT_MS = 30000;
 
 export interface FetchAnalysisResult {
   analysis: StockAnalysisData | null;
