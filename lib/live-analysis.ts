@@ -11,14 +11,22 @@ import {
   StockAnalysisData,
   TradeLevel
 } from "@/types/stock";
+import { AnalysisAllowance, AuthUser, GuestUsage } from "@/types/auth";
+import { getBackendApiBaseUrl } from "@/lib/backend-api";
 
-const ANALYZE_API_URL = "https://trade-analysis-api-two.vercel.app/api/analyze";
+const ANALYZE_API_URL = `${getBackendApiBaseUrl()}/api/analyze`;
 const ANALYZE_API_TIMEOUT_MS = 15000;
 
-interface FetchAnalysisResult {
+export interface FetchAnalysisResult {
   analysis: StockAnalysisData | null;
   error?: string;
   isLive: boolean;
+  authRequired?: boolean;
+  paywallRequired?: boolean;
+  code?: string;
+  user?: AuthUser | null;
+  guestUsage?: GuestUsage;
+  allowance?: AnalysisAllowance;
 }
 
 export function createEmptyAnalysis(ticker: string): StockAnalysisData {
@@ -87,6 +95,124 @@ function asNumber(value: unknown) {
 
 function asString(value: unknown) {
   return typeof value === "string" ? value : undefined;
+}
+
+function asGuestUsage(value: unknown): GuestUsage | undefined {
+  if (!isObject(value)) {
+    return undefined;
+  }
+
+  const guestKey = asString(value.guestKey);
+  const firstTicker = asString(value.firstTicker);
+  const accessCount = asNumber(value.accessCount);
+  const remainingAnalyses = asNumber(value.remainingAnalyses);
+  const freeAnalysisUsed = typeof value.freeAnalysisUsed === "boolean"
+    ? value.freeAnalysisUsed
+    : undefined;
+
+  if (
+    !guestKey ||
+    !firstTicker ||
+    accessCount === undefined ||
+    remainingAnalyses === undefined ||
+    freeAnalysisUsed === undefined
+  ) {
+    return undefined;
+  }
+
+  return {
+    guestKey,
+    firstTicker,
+    accessCount,
+    freeAnalysisUsed,
+    remainingAnalyses
+  };
+}
+
+function asAuthUser(value: unknown): AuthUser | undefined {
+  if (!isObject(value)) {
+    return undefined;
+  }
+
+  const id = asString(value.id);
+  const email = asString(value.email);
+  const name = asString(value.name);
+  const provider =
+    value.provider === "credentials" || value.provider === "google"
+      ? value.provider
+      : undefined;
+  const accountTier =
+    value.accountTier === "free" || value.accountTier === "paid"
+      ? value.accountTier
+      : undefined;
+  const subscriptionStatus =
+    value.subscriptionStatus === "inactive" || value.subscriptionStatus === "active"
+      ? value.subscriptionStatus
+      : undefined;
+  const subscriptionPlan =
+    value.subscriptionPlan === null || value.subscriptionPlan === "pro-monthly"
+      ? value.subscriptionPlan
+      : undefined;
+  const dailyAnalysisLimit =
+    value.dailyAnalysisLimit === null
+      ? null
+      : asNumber(value.dailyAnalysisLimit);
+
+  if (
+    !id ||
+    !email ||
+    !name ||
+    !provider ||
+    !accountTier ||
+    !subscriptionStatus ||
+    subscriptionPlan === undefined ||
+    dailyAnalysisLimit === undefined
+  ) {
+    return undefined;
+  }
+
+  return {
+    id,
+    email,
+    name,
+    provider,
+    accountTier,
+    subscriptionStatus,
+    subscriptionPlan,
+    dailyAnalysisLimit
+  };
+}
+
+function asAnalysisAllowance(value: unknown): AnalysisAllowance | undefined {
+  if (!isObject(value)) {
+    return undefined;
+  }
+
+  const accountTier =
+    value.accountTier === "guest" || value.accountTier === "free" || value.accountTier === "paid"
+      ? value.accountTier
+      : undefined;
+  const analysesUsedToday = asNumber(value.analysesUsedToday);
+  const dailyAnalysisLimit =
+    value.dailyAnalysisLimit === null ? null : asNumber(value.dailyAnalysisLimit);
+  const remainingAnalyses =
+    value.remainingAnalyses === null ? null : asNumber(value.remainingAnalyses);
+
+  if (
+    !accountTier ||
+    analysesUsedToday === undefined ||
+    dailyAnalysisLimit === undefined ||
+    remainingAnalyses === undefined
+  ) {
+    return undefined;
+  }
+
+  return {
+    accountTier,
+    dailyAnalysisLimit,
+    remainingAnalyses,
+    analysesUsedToday
+  };
 }
 
 function firstDefined<T>(...values: Array<T | undefined>) {
@@ -472,7 +598,10 @@ function normalizeAnalysis(ticker: string, raw: unknown): StockAnalysisData {
   };
 }
 
-export async function fetchLiveAnalysis(ticker: string): Promise<FetchAnalysisResult> {
+export async function fetchLiveAnalysis(
+  ticker: string,
+  options?: { sessionToken?: string; guestId?: string }
+): Promise<FetchAnalysisResult> {
   const normalizedTicker = getAnalysisTicker(ticker);
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), ANALYZE_API_TIMEOUT_MS);
@@ -481,23 +610,44 @@ export async function fetchLiveAnalysis(ticker: string): Promise<FetchAnalysisRe
     const response = await fetch(ANALYZE_API_URL, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        ...(options?.sessionToken ? { "x-trade-session": options.sessionToken } : {}),
+        ...(options?.guestId ? { "x-trade-guest-id": options.guestId } : {})
       },
       body: JSON.stringify({ ticker: normalizedTicker }),
       cache: "no-store",
       signal: controller.signal
     });
 
-    if (!response.ok) {
-      throw new Error(`API responded with ${response.status}`);
-    }
-
     const payload = (await response.json()) as unknown;
     clearTimeout(timeoutId);
 
+    if (!response.ok) {
+      const payloadObject = isObject(payload) ? payload : {};
+
+      return {
+        analysis: null,
+        error:
+          asString(firstDefined(payloadObject.error, payloadObject.details)) ??
+          `API responded with ${response.status}`,
+        isLive: false,
+        authRequired: Boolean(payloadObject.authRequired),
+        paywallRequired: Boolean(payloadObject.paywallRequired),
+        code: asString(payloadObject.code),
+        guestUsage: asGuestUsage(payloadObject.guestUsage),
+        allowance: asAnalysisAllowance(payloadObject.allowance)
+      };
+    }
+
+    const payloadObject = isObject(payload) ? payload : {};
+    const authObject = isObject(payloadObject.auth) ? payloadObject.auth : undefined;
+
     return {
       analysis: normalizeAnalysis(normalizedTicker, payload),
-      isLive: true
+      isLive: true,
+      user: asAuthUser(authObject?.user) ?? null,
+      guestUsage: asGuestUsage(authObject?.guestUsage),
+      allowance: asAnalysisAllowance(authObject?.allowance)
     };
   } catch (error) {
     clearTimeout(timeoutId);

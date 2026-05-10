@@ -7,7 +7,10 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   const ticker = getAnalysisTicker(request.nextUrl.searchParams.get("ticker") ?? undefined);
-  const result = await fetchLiveAnalysis(ticker);
+  const result = await fetchLiveAnalysis(ticker, {
+    sessionToken: request.headers.get("x-trade-session") ?? undefined,
+    guestId: request.headers.get("x-trade-guest-id") ?? undefined
+  });
 
   return NextResponse.json(result);
 }
@@ -15,7 +18,10 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => ({}))) as { ticker?: string };
   const ticker = getAnalysisTicker(body.ticker);
-  const result = await fetchLiveAnalysis(ticker);
+  const result = await fetchLiveAnalysis(ticker, {
+    sessionToken: request.headers.get("x-trade-session") ?? undefined,
+    guestId: request.headers.get("x-trade-guest-id") ?? undefined
+  });
 
   return NextResponse.json(result);
 }

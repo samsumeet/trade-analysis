@@ -11,16 +11,20 @@ import {
 } from "lucide-react";
 
 import { AnalysisDashboard } from "@/components/analysis-dashboard";
+import { AuthModal } from "@/components/auth-modal";
+import { useAuth } from "@/components/auth-provider";
 import { DashboardLoader } from "@/components/dashboard-loader";
 import { DashboardStatus } from "@/components/dashboard-status";
 import { Footer } from "@/components/footer";
 import { SampleReport } from "@/components/sample-report";
 import { SiteHeader } from "@/components/site-header";
 import { TickerSearch } from "@/components/ticker-search";
+import { UpgradeModal } from "@/components/upgrade-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
+import { AnalysisAllowance, GuestUsage } from "@/types/auth";
 import { StockAnalysisData } from "@/types/stock";
 
 interface DashboardPageProps {
@@ -31,6 +35,11 @@ interface AnalysisApiResponse {
   analysis: StockAnalysisData | null;
   error?: string;
   isLive: boolean;
+  authRequired?: boolean;
+  paywallRequired?: boolean;
+  code?: string;
+  guestUsage?: GuestUsage;
+  allowance?: AnalysisAllowance;
 }
 
 const FAVORITES_STORAGE_KEY = "trade-analysis:favorites";
@@ -60,6 +69,16 @@ const dashboardCards = [
 ];
 
 export function DashboardPage({ initialTicker }: DashboardPageProps) {
+  const {
+    guestId,
+    guestUsage,
+    isAuthenticated,
+    allowance,
+    setAllowance,
+    setGuestUsage,
+    token,
+    user
+  } = useAuth();
   const [activeTicker, setActiveTicker] = useState(initialTicker);
   const [analysis, setAnalysis] = useState<StockAnalysisData | null>(null);
   const [error, setError] = useState<string | undefined>(undefined);
@@ -67,6 +86,10 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [reloadKey, setReloadKey] = useState(0);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [requiresAuth, setRequiresAuth] = useState(false);
+  const [requiresUpgrade, setRequiresUpgrade] = useState(false);
   const requestIdRef = useRef(0);
 
   useEffect(() => {
@@ -106,22 +129,57 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
     requestIdRef.current = requestId;
 
     async function loadAnalysis() {
+      if (!guestId) {
+        return;
+      }
+
       setIsLoading(true);
       setError(undefined);
+      setRequiresAuth(false);
+      setRequiresUpgrade(false);
 
       try {
-        const response = await fetch(`/api/analyze?ticker=${activeTicker}`, {
+        const response = await fetch(`/api/analyze`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-trade-guest-id": guestId,
+            ...(token ? { "x-trade-session": token } : {})
+          },
+          body: JSON.stringify({ ticker: activeTicker }),
           cache: "no-store",
           signal: controller.signal
         });
 
-        if (!response.ok) {
-          throw new Error(`Request failed with ${response.status}`);
-        }
-
         const payload = (await response.json()) as AnalysisApiResponse;
 
         if (requestId !== requestIdRef.current) {
+          return;
+        }
+
+        if (payload.guestUsage) {
+          setGuestUsage(payload.guestUsage);
+        }
+
+        if (payload.allowance) {
+          setAllowance(payload.allowance);
+        }
+
+        if (!response.ok || payload.authRequired) {
+          setAnalysis(null);
+          setError(payload.error ?? `Request failed with ${response.status}`);
+          setIsLive(false);
+          setRequiresAuth(Boolean(payload.authRequired));
+          setRequiresUpgrade(Boolean(payload.paywallRequired));
+
+          if (payload.authRequired) {
+            setIsAuthModalOpen(true);
+          }
+
+          if (payload.paywallRequired) {
+            setIsUpgradeModalOpen(true);
+          }
+
           return;
         }
 
@@ -150,7 +208,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
     void loadAnalysis();
 
     return () => controller.abort();
-  }, [activeTicker, reloadKey]);
+  }, [activeTicker, guestId, reloadKey, setAllowance, setGuestUsage, token]);
 
   const selectTicker = (ticker: string) => {
     if (ticker === activeTicker) {
@@ -194,9 +252,17 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
     });
   };
 
+  const handleAuthSuccess = () => {
+    setRequiresAuth(false);
+    setRequiresUpgrade(false);
+    setError(undefined);
+    setReloadKey((current) => current + 1);
+  };
+
   return (
-    <main className="pb-10">
-      <div className="relative overflow-hidden">
+    <>
+      <main className="pb-10">
+        <div className="relative overflow-hidden">
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.16),transparent_28%),radial-gradient(circle_at_left,rgba(16,185,129,0.12),transparent_24%),linear-gradient(to_bottom,rgba(255,255,255,0.86),rgba(248,250,252,1))] dark:bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.22),transparent_28%),radial-gradient(circle_at_left,rgba(16,185,129,0.14),transparent_24%),linear-gradient(to_bottom,rgba(2,6,23,0.92),rgba(2,8,23,1))]" />
         <SiteHeader
           navItems={[
@@ -240,6 +306,29 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
               </div>
 
               <div className="mt-6 flex flex-wrap items-center gap-3">
+                {!isAuthenticated ? (
+                  <Badge variant="warning">
+                    {guestUsage?.freeAnalysisUsed
+                      ? `Guest access used. Sign in to unlock 3 analyses per day.`
+                      : "One guest stock analysis available without login."}
+                  </Badge>
+                ) : null}
+                {user ? (
+                  <Badge variant={user.accountTier === "paid" ? "bullish" : "info"}>
+                    {user.accountTier === "paid" ? "Paid account" : "Free account"}: {user.name}
+                  </Badge>
+                ) : null}
+                {allowance?.accountTier === "free" ? (
+                  <Badge variant="default">
+                    {allowance.remainingAnalyses} of {allowance.dailyAnalysisLimit} analyses left today
+                  </Badge>
+                ) : null}
+                {allowance?.accountTier === "paid" ? (
+                  <Badge variant="bullish">Unlimited analyses enabled</Badge>
+                ) : null}
+              </div>
+
+              <div className="mt-4 flex flex-wrap items-center gap-3">
                 <Button
                   type="button"
                   variant={isFavorite ? "default" : "secondary"}
@@ -254,6 +343,11 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                 <p className="text-sm text-slate-500 dark:text-slate-400">
                   Save up to {MAX_FAVORITES} favorite stocks in your browser.
                 </p>
+                {isAuthenticated && user?.accountTier === "free" ? (
+                  <Button type="button" onClick={() => setIsUpgradeModalOpen(true)}>
+                    Upgrade to Paid
+                  </Button>
+                ) : null}
               </div>
 
               <div className="mt-4">
@@ -402,6 +496,50 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
           <DashboardLoader ticker={activeTicker} />
         ) : analysis ? (
           <AnalysisDashboard analysis={analysis} mode="full" />
+        ) : requiresAuth ? (
+          <Card className="overflow-hidden rounded-[32px] border-slate-200/70 bg-white/95 shadow-soft dark:border-slate-800 dark:bg-slate-900/90">
+            <CardContent className="p-8 sm:p-10">
+              <div className="mx-auto max-w-3xl text-center">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
+                  Authentication required
+                </p>
+                <h3 className="mt-4 text-3xl font-semibold text-slate-950 dark:text-slate-50">
+                  Your free guest analysis has already been used
+                </h3>
+                <p className="mt-4 text-base leading-8 text-slate-600 dark:text-slate-300">
+                  Sign in with Gmail or create an account to unlock unlimited live
+                  stock analysis beyond {guestUsage?.firstTicker ?? "your first ticker"}.
+                </p>
+                <div className="mt-8 flex justify-center">
+                  <Button type="button" onClick={() => setIsAuthModalOpen(true)}>
+                    Continue to Sign In
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : requiresUpgrade ? (
+          <Card className="overflow-hidden rounded-[32px] border-slate-200/70 bg-white/95 shadow-soft dark:border-slate-800 dark:bg-slate-900/90">
+            <CardContent className="p-8 sm:p-10">
+              <div className="mx-auto max-w-3xl text-center">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
+                  Daily free limit reached
+                </p>
+                <h3 className="mt-4 text-3xl font-semibold text-slate-950 dark:text-slate-50">
+                  Your free account has used all 3 analyses for today
+                </h3>
+                <p className="mt-4 text-base leading-8 text-slate-600 dark:text-slate-300">
+                  Upgrade to the paid plan to remove the daily cap and analyze any
+                  number of stocks.
+                </p>
+                <div className="mt-8 flex justify-center">
+                  <Button type="button" onClick={() => setIsUpgradeModalOpen(true)}>
+                    Upgrade to Paid
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         ) : (
           <Card className="overflow-hidden rounded-[32px] border-slate-200/70 bg-white/95 shadow-soft dark:border-slate-800 dark:bg-slate-900/90">
             <CardContent className="p-8 sm:p-10">
@@ -580,6 +718,18 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
       <div className="container mt-20">
         <Footer />
       </div>
-    </main>
+      </main>
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={handleAuthSuccess}
+      />
+      <UpgradeModal
+        isOpen={isUpgradeModalOpen}
+        onClose={() => setIsUpgradeModalOpen(false)}
+        onSuccess={handleAuthSuccess}
+      />
+    </>
   );
 }
