@@ -9,6 +9,7 @@ import {
   ChartNoAxesColumn,
   Clock3,
   Infinity as InfinityIcon,
+  Newspaper,
   Trash2,
   ShieldCheck,
   Star,
@@ -60,6 +61,18 @@ interface DashboardApiResponse extends Partial<DashboardSummary> {
 interface WatchlistApiResponse {
   watchlist?: WatchlistItem[];
   limit?: number;
+  error?: string;
+}
+
+interface NewsItem {
+  title: string;
+  link: string;
+  publishedAt: string | null;
+  source: string | null;
+}
+
+interface NewsApiResponse {
+  items?: NewsItem[];
   error?: string;
 }
 
@@ -200,6 +213,9 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
   const [requiresAuth, setRequiresAuth] = useState(false);
   const [requiresUpgrade, setRequiresUpgrade] = useState(false);
   const [requestMode, setRequestMode] = useState<"live" | "history">("live");
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+  const [newsError, setNewsError] = useState<string | undefined>(undefined);
+  const [isNewsLoading, setIsNewsLoading] = useState(false);
   const requestIdRef = useRef(0);
 
   useEffect(() => {
@@ -419,6 +435,53 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
 
     return () => controller.abort();
   }, [activeTicker, guestId, reloadKey, requestMode, setAllowance, setGuestUsage, token]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadNews() {
+      if (!activeTicker) {
+        setNewsItems([]);
+        setNewsError(undefined);
+        setIsNewsLoading(false);
+        return;
+      }
+
+      setIsNewsLoading(true);
+      setNewsError(undefined);
+
+      try {
+        const response = await fetch(`/api/news?ticker=${encodeURIComponent(activeTicker)}`, {
+          cache: "no-store",
+          signal: controller.signal
+        });
+        const payload = (await response.json().catch(() => ({}))) as NewsApiResponse;
+
+        if (!response.ok) {
+          setNewsItems([]);
+          setNewsError(payload.error ?? "Unable to load stock news.");
+          return;
+        }
+
+        setNewsItems(payload.items ?? []);
+      } catch (fetchError) {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        setNewsItems([]);
+        setNewsError(fetchError instanceof Error ? fetchError.message : "Unable to load stock news.");
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsNewsLoading(false);
+        }
+      }
+    }
+
+    void loadNews();
+
+    return () => controller.abort();
+  }, [activeTicker]);
 
   const selectTicker = (ticker: string) => {
     if (ticker === activeTicker) {
@@ -854,6 +917,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
 
             <Card className="glass-panel rounded-[32px] border-white/70 shadow-soft dark:border-slate-800">
               <CardContent className="p-5 sm:p-6">
+                <div className="space-y-5">
                 <div className="rounded-[28px] border border-slate-200/70 bg-slate-950 p-5 text-white">
                   {analysis ? (
                     <>
@@ -940,6 +1004,69 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                       ) : null}
                     </div>
                   )}
+                </div>
+
+                <div className="rounded-[28px] border border-slate-200/70 bg-white/90 p-5 shadow-soft dark:border-slate-800 dark:bg-slate-900/85">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+                        Latest news
+                      </p>
+                      <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                        Three recent Stock News headlines for {activeTicker || "your next stock"}.
+                      </p>
+                    </div>
+                    <Newspaper className="h-5 w-5 text-slate-400 dark:text-slate-500" />
+                  </div>
+
+                  <div className="mt-4 space-y-3">
+                    {isNewsLoading ? (
+                      Array.from({ length: 3 }).map((_, index) => (
+                        <div
+                          key={index}
+                          className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-950/50"
+                        >
+                          <div className="h-3.5 w-24 animate-pulse rounded-full bg-slate-200 dark:bg-slate-800" />
+                          <div className="mt-3 h-4 animate-pulse rounded-full bg-slate-200 dark:bg-slate-800" />
+                          <div className="mt-2 h-4 w-5/6 animate-pulse rounded-full bg-slate-200 dark:bg-slate-800" />
+                        </div>
+                      ))
+                    ) : newsItems.length > 0 ? (
+                      newsItems.map((item) => (
+                        <a
+                          key={`${item.link}-${item.title}`}
+                          href={item.link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 transition hover:border-slate-300 hover:bg-white dark:border-slate-800 dark:bg-slate-950/50 dark:hover:border-slate-700 dark:hover:bg-slate-900"
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold leading-6 text-slate-950 dark:text-slate-50">
+                                {item.title}
+                              </p>
+                              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+                                {item.source ? <span>{item.source}</span> : null}
+                                {item.publishedAt ? (
+                                  <span>{formatRelativeTime(item.publishedAt)}</span>
+                                ) : null}
+                              </div>
+                            </div>
+                            <ArrowUpRight className="mt-0.5 h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
+                          </div>
+                        </a>
+                      ))
+                    ) : newsError ? (
+                      <p className="rounded-2xl border border-slate-200/80 bg-slate-50/80 px-4 py-4 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-400">
+                        {newsError}
+                      </p>
+                    ) : (
+                      <p className="rounded-2xl border border-slate-200/80 bg-slate-50/80 px-4 py-4 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-400">
+                        Pick a stock to load related headlines.
+                      </p>
+                    )}
+                  </div>
+                </div>
                 </div>
               </CardContent>
             </Card>
