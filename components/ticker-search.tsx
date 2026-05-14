@@ -1,9 +1,10 @@
 "use client";
 
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, BrainCircuit, CandlestickChart, Search, TrendingUp } from "lucide-react";
 
+import nyseTickers from "@/data/nyse_tickers.json";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,10 @@ interface TickerSearchProps {
 }
 
 const overlayBars = [48, 74, 66, 94, 78, 112, 88, 124, 96];
+const MAX_SUGGESTIONS = 8;
+const AVAILABLE_TICKERS = (nyseTickers as string[]).filter((ticker) =>
+  /^[A-Z.\-]{1,10}$/.test(ticker)
+);
 
 export function TickerSearch({
   activeTicker,
@@ -34,6 +39,8 @@ export function TickerSearch({
   const [query, setQuery] = useState(activeTicker);
   const [error, setError] = useState("");
   const [pendingTicker, setPendingTicker] = useState("");
+  const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
 
   useEffect(() => {
     setQuery(activeTicker);
@@ -45,19 +52,33 @@ export function TickerSearch({
     }
   }, [analysisLoading]);
 
-  const handleAnalyze = () => {
-    const normalized = query.trim().toUpperCase();
-    if (!/^[A-Z.\-]{1,10}$/.test(normalized)) {
-      setError("Enter a valid US stock ticker, for example NVDA or AAPL.");
-      return;
+  const suggestions = useMemo(() => {
+    const normalizedQuery = query.trim().toUpperCase();
+
+    if (!normalizedQuery) {
+      return AVAILABLE_TICKERS.slice(0, MAX_SUGGESTIONS);
     }
 
+    return AVAILABLE_TICKERS
+      .filter((ticker) => ticker.includes(normalizedQuery))
+      .slice(0, MAX_SUGGESTIONS);
+  }, [query]);
+
+  useEffect(() => {
+    setHighlightedIndex(0);
+  }, [query]);
+
+  const triggerAnalysis = (ticker: string) => {
     setError("");
-    setPendingTicker(normalized);
-    setActiveTicker(normalized);
+    setPendingTicker(ticker);
+    setIsAutocompleteOpen(false);
+    setHighlightedIndex(0);
+    setQuery(ticker);
+    setActiveTicker(ticker);
+
     window.setTimeout(() => {
       if (onAnalyze) {
-        onAnalyze(normalized);
+        onAnalyze(ticker);
         return;
       }
 
@@ -65,6 +86,25 @@ export function TickerSearch({
       dashboard?.scrollIntoView({ behavior: "smooth", block: "start" });
       setPendingTicker("");
     }, 80);
+  };
+
+  const selectSuggestion = (ticker: string) => {
+    setQuery(ticker);
+    setActiveTicker(ticker);
+    setError("");
+    setIsAutocompleteOpen(false);
+    setHighlightedIndex(0);
+    onTickerSelect?.(ticker);
+  };
+
+  const handleAnalyze = () => {
+    const normalized = query.trim().toUpperCase();
+    if (!/^[A-Z.\-]{1,10}$/.test(normalized)) {
+      setError("Enter a valid US stock ticker, for example NVDA or AAPL.");
+      return;
+    }
+
+    triggerAnalysis(normalized);
   };
 
   const handleSampleReport = () => {
@@ -200,25 +240,87 @@ export function TickerSearch({
             value={query}
             onChange={(event) => {
               setQuery(event.target.value.toUpperCase());
+              setIsAutocompleteOpen(true);
               if (error) {
                 setError("");
               }
             }}
             onKeyDown={(event) => {
+              if (event.key === "ArrowDown") {
+                event.preventDefault();
+                setIsAutocompleteOpen(true);
+                setHighlightedIndex((current) =>
+                  suggestions.length === 0 ? 0 : (current + 1) % suggestions.length
+                );
+                return;
+              }
+
+              if (event.key === "ArrowUp") {
+                event.preventDefault();
+                setIsAutocompleteOpen(true);
+                setHighlightedIndex((current) =>
+                  suggestions.length === 0 ? 0 : (current - 1 + suggestions.length) % suggestions.length
+                );
+                return;
+              }
+
               if (event.key === "Enter") {
                 event.preventDefault();
+                if (isAutocompleteOpen && suggestions[highlightedIndex]) {
+                  triggerAnalysis(suggestions[highlightedIndex]);
+                  return;
+                }
                 handleAnalyze();
+                return;
               }
+
+              if (event.key === "Escape") {
+                setIsAutocompleteOpen(false);
+              }
+            }}
+            onFocus={() => setIsAutocompleteOpen(true)}
+            onBlur={() => {
+              window.setTimeout(() => setIsAutocompleteOpen(false), 120);
             }}
             placeholder="Search any US stock ticker, for example NVDA or AAPL"
             className="h-14 border-white/80 bg-white pl-11 text-base dark:border-slate-700 dark:bg-slate-900"
-            list="ticker-suggestions"
           />
-          <datalist id="ticker-suggestions">
-            {quickTickers.map((ticker) => (
-              <option key={ticker} value={ticker} />
-            ))}
-          </datalist>
+          {isAutocompleteOpen && suggestions.length > 0 ? (
+            <div className="absolute left-0 right-0 top-[calc(100%+0.6rem)] z-30 overflow-hidden rounded-[24px] border border-slate-200/80 bg-white/95 p-2 shadow-2xl backdrop-blur dark:border-slate-800 dark:bg-slate-950/95">
+              <div className="mb-1 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+                Matching stocks
+              </div>
+              <div className="space-y-1">
+                {suggestions.map((entry, index) => {
+                  const isHighlighted = index === highlightedIndex;
+
+                  return (
+                    <button
+                      key={entry}
+                      type="button"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => {
+                        selectSuggestion(entry);
+                        triggerAnalysis(entry);
+                      }}
+                      className={`flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-3 text-left transition ${
+                        isHighlighted
+                          ? "bg-slate-900 text-white dark:bg-blue-500"
+                          : "bg-transparent text-slate-900 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-900"
+                      }`}
+                    >
+                      <p className="text-sm font-semibold">{entry}</p>
+                      <ArrowRight
+                        className={`h-4 w-4 shrink-0 ${
+                          isHighlighted ? "text-white" : "text-slate-400 dark:text-slate-500"
+                        }`}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
           <Button size="lg" className="gap-2" onClick={handleAnalyze}>
@@ -247,6 +349,7 @@ export function TickerSearch({
                     setQuery(ticker);
                     setActiveTicker(ticker);
                     setError("");
+                    setIsAutocompleteOpen(false);
                     onTickerSelect?.(ticker);
                   }}
                   className={`rounded-full px-3 py-1.5 text-sm transition ${
