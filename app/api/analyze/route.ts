@@ -4,6 +4,7 @@ import { getAnalysisTicker } from "@/data/mock-analysis";
 import { fetchLiveAnalysis } from "@/lib/live-analysis";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 180;
 
 export async function GET(request: NextRequest) {
   const ticker = getAnalysisTicker(request.nextUrl.searchParams.get("ticker") ?? undefined);

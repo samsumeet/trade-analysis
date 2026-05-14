@@ -15,7 +15,21 @@ import { AnalysisAllowance, AuthUser, GuestUsage } from "@/types/auth";
 import { getBackendApiBaseUrl } from "@/lib/backend-api";
 
 const ANALYZE_API_URL = `${getBackendApiBaseUrl()}/api/analyze`;
-const ANALYZE_API_TIMEOUT_MS = 30000;
+
+function getAnalyzeApiTimeoutMs() {
+  const configured = Number(
+    process.env.TRADE_ANALYSIS_API_TIMEOUT_MS ??
+      process.env.NEXT_PUBLIC_TRADE_ANALYSIS_API_TIMEOUT_MS
+  );
+
+  if (Number.isFinite(configured) && configured >= 1000) {
+    return configured;
+  }
+
+  return 120000;
+}
+
+const ANALYZE_API_TIMEOUT_MS = getAnalyzeApiTimeoutMs();
 
 export interface FetchAnalysisResult {
   analysis: StockAnalysisData | null;
