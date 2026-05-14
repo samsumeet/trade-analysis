@@ -24,6 +24,30 @@ export interface AnalysisAllowance {
   analysesUsedToday: number;
 }
 
+export interface WatchlistItem {
+  ticker: string;
+  addedAt: string;
+}
+
+export interface AnalysisHistoryItem {
+  ticker: string;
+  companyName: string;
+  currentPrice: number | null;
+  trendBias: string;
+  confidenceScore: number | null;
+  analysisCount: number;
+  firstAnalyzedAt: string;
+  lastAnalyzedAt: string;
+}
+
+export interface DashboardSummary {
+  allowance: AnalysisAllowance;
+  watchlist: WatchlistItem[];
+  history: AnalysisHistoryItem[];
+  watchlistLimit: number;
+  historyLimit: number;
+}
+
 export interface AuthSuccessResponse {
   token: string;
   user: AuthUser;

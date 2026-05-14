@@ -136,7 +136,7 @@ export function Pricing() {
           setIsUpgradeModalOpen(true);
         }}
         title="Create a free account before upgrading"
-        description="Guests can view one analysis only. Create a free account to unlock 3 daily analyses, then upgrade to paid for unlimited access."
+        description="Guests can view one analysis only. Create a free account to unlock 5 daily analyses, then upgrade to paid for unlimited access."
       />
 
       <UpgradeModal

@@ -409,3 +409,13 @@ export function getAnalysisTicker(ticker?: string) {
 
   return "NVDA";
 }
+
+export function normalizeAnalysisTicker(ticker?: string) {
+  const normalized = ticker?.trim().toUpperCase();
+
+  if (normalized && /^[A-Z.\-]{1,10}$/.test(normalized)) {
+    return normalized;
+  }
+
+  return "";
+}

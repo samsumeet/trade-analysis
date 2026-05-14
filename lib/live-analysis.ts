@@ -680,3 +680,63 @@ export async function fetchLiveAnalysis(
     };
   }
 }
+
+export async function fetchSavedAnalysis(
+  ticker: string,
+  options?: { sessionToken?: string; guestId?: string }
+): Promise<FetchAnalysisResult> {
+  const normalizedTicker = getAnalysisTicker(ticker);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), ANALYZE_API_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(
+      `${ANALYZE_API_URL}?ticker=${encodeURIComponent(normalizedTicker)}&latest=true`,
+      {
+        method: "GET",
+        headers: {
+          ...(options?.sessionToken ? { "x-trade-session": options.sessionToken } : {}),
+          ...(options?.guestId ? { "x-trade-guest-id": options.guestId } : {})
+        },
+        cache: "no-store",
+        signal: controller.signal
+      }
+    );
+
+    const payload = (await response.json()) as unknown;
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const payloadObject = isObject(payload) ? payload : {};
+
+      return {
+        analysis: null,
+        error:
+          asString(firstDefined(payloadObject.error, payloadObject.details)) ??
+          `API responded with ${response.status}`,
+        isLive: false,
+        code: asString(payloadObject.code)
+      };
+    }
+
+    return {
+      analysis: normalizeAnalysis(normalizedTicker, payload),
+      isLive: true
+    };
+  } catch (error) {
+    clearTimeout(timeoutId);
+
+    const message =
+      error instanceof Error && error.name === "AbortError"
+        ? `API timed out after ${ANALYZE_API_TIMEOUT_MS / 1000}s`
+        : error instanceof Error
+          ? error.message
+          : "Unknown API error";
+
+    return {
+      analysis: null,
+      error: message,
+      isLive: false
+    };
+  }
+}
