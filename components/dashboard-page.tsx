@@ -8,7 +8,11 @@ import {
   BriefcaseBusiness,
   ChartNoAxesColumn,
   Clock3,
+  Copy,
+  FileDown,
   Infinity as InfinityIcon,
+  Loader2,
+  Link2,
   Newspaper,
   Trash2,
   ShieldCheck,
@@ -73,6 +77,13 @@ interface NewsItem {
 
 interface NewsApiResponse {
   items?: NewsItem[];
+  error?: string;
+}
+
+interface ShareReportApiResponse {
+  shareId?: string;
+  ticker?: string;
+  createdAt?: string;
   error?: string;
 }
 
@@ -188,6 +199,15 @@ function mergeHistoryItem(history: AnalysisHistoryItem[], item: AnalysisHistoryI
   return [nextItem, ...history.filter((entry) => entry.ticker !== item.ticker)].slice(0, limit);
 }
 
+function scrollToSection(sectionId: string) {
+  window.requestAnimationFrame(() => {
+    document.getElementById(sectionId)?.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  });
+}
+
 export function DashboardPage({ initialTicker }: DashboardPageProps) {
   const {
     guestId,
@@ -216,6 +236,10 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
   const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
   const [newsError, setNewsError] = useState<string | undefined>(undefined);
   const [isNewsLoading, setIsNewsLoading] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareAnalysisKey, setShareAnalysisKey] = useState<string | null>(null);
+  const [shareStatus, setShareStatus] = useState<string | null>(null);
+  const [isShareBusy, setIsShareBusy] = useState(false);
   const requestIdRef = useRef(0);
 
   useEffect(() => {
@@ -483,6 +507,15 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
     return () => controller.abort();
   }, [activeTicker]);
 
+  useEffect(() => {
+    setShareStatus(null);
+
+    if (!analysis) {
+      setShareUrl(null);
+      setShareAnalysisKey(null);
+    }
+  }, [analysis]);
+
   const selectTicker = (ticker: string) => {
     if (ticker === activeTicker) {
       return;
@@ -493,6 +526,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
     setAnalysis(null);
     setIsLoading(true);
     window.history.replaceState(null, "", `/dashboard?ticker=${ticker}`);
+    scrollToSection("dashboard");
   };
 
   const refreshTicker = (ticker: string) => {
@@ -504,6 +538,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
       setIsLive(false);
       setReloadKey((current) => current + 1);
       window.history.replaceState(null, "", `/dashboard?ticker=${ticker}`);
+      scrollToSection("dashboard");
       return;
     }
 
@@ -518,6 +553,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
     setIsLive(false);
     setIsLoading(true);
     window.history.replaceState(null, "", `/dashboard?ticker=${ticker}`);
+    scrollToSection("dashboard");
   };
 
   const watchlistTickers = watchlist.map((item) => item.ticker);
@@ -594,6 +630,73 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
     setRequiresUpgrade(false);
     setError(undefined);
     setReloadKey((current) => current + 1);
+  };
+
+  const currentAnalysisKey = analysis
+    ? `${analysis.symbol}:${analysis.currentPrice}:${analysis.confidenceScore}:${analysis.aiSummary}`
+    : null;
+
+  const ensureSharedReport = async () => {
+    if (!analysis || !currentAnalysisKey) {
+      throw new Error("Run an analysis before exporting or sharing.");
+    }
+
+    if (shareUrl && shareAnalysisKey === currentAnalysisKey) {
+      return shareUrl;
+    }
+
+    setIsShareBusy(true);
+    setShareStatus(null);
+
+    try {
+      const response = await fetch("/api/share-report", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          ticker: analysis.symbol,
+          analysis
+        })
+      });
+
+      const payload = (await response.json().catch(() => ({}))) as ShareReportApiResponse;
+
+      if (!response.ok || !payload.shareId) {
+        throw new Error(payload.error ?? "Unable to create a shared report.");
+      }
+
+      const nextUrl = `${window.location.origin}/shared/${payload.shareId}`;
+      setShareUrl(nextUrl);
+      setShareAnalysisKey(currentAnalysisKey);
+      return nextUrl;
+    } finally {
+      setIsShareBusy(false);
+    }
+  };
+
+  const handleShareReport = async () => {
+    try {
+      const url = await ensureSharedReport();
+      await navigator.clipboard.writeText(url);
+      setShareStatus("Read-only link copied");
+    } catch (shareError) {
+      setShareStatus(
+        shareError instanceof Error ? shareError.message : "Unable to create a share link."
+      );
+    }
+  };
+
+  const handleExportPdf = async () => {
+    try {
+      const url = await ensureSharedReport();
+      window.open(`${url}?print=1`, "_blank", "noopener,noreferrer");
+      setShareStatus("Printer-friendly report opened");
+    } catch (shareError) {
+      setShareStatus(
+        shareError instanceof Error ? shareError.message : "Unable to open PDF export."
+      );
+    }
   };
 
   const usageLimit = allowance?.dailyAnalysisLimit ?? (allowance?.accountTier === "guest" ? 1 : null);
@@ -895,6 +998,11 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
               <div className="mt-8 flex flex-wrap gap-3">
                 {analysis ? (
                   <>
+                    {requestMode === "history" ? (
+                      <Badge variant="info" className="bg-white/80 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                        Viewing saved history snapshot
+                      </Badge>
+                    ) : null}
                     <Badge variant={analysis.dailyChangePct >= 0 ? "bullish" : "bearish"}>
                       {analysis.dailyChangePct >= 0 ? "+" : ""}
                       {analysis.dailyChangePct.toFixed(2)}% today
@@ -1208,9 +1316,65 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
               </CardContent>
             </Card>
           ) : (
-            <SampleReport analysis={analysis} />
+            <SampleReport
+              analysis={analysis}
+              eyebrow={requestMode === "history" ? "Saved Analysis Brief" : "Live Analysis Brief"}
+              title={
+                requestMode === "history"
+                  ? `${analysis.symbol} Saved Trade Brief`
+                  : undefined
+              }
+              actions={
+                <>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => void handleExportPdf()}
+                    disabled={isShareBusy}
+                    className="gap-2 border-white/15 bg-white/10 text-white hover:bg-white/15 dark:border-white/15 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
+                  >
+                    {isShareBusy ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <FileDown className="h-4 w-4" />
+                    )}
+                    Export PDF
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => void handleShareReport()}
+                    disabled={isShareBusy}
+                    className="gap-2 border-white/15 bg-white/10 text-white hover:bg-white/15 dark:border-white/15 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
+                  >
+                    {isShareBusy ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : shareStatus === "Read-only link copied" ? (
+                      <Copy className="h-4 w-4" />
+                    ) : (
+                      <Link2 className="h-4 w-4" />
+                    )}
+                    Share link
+                  </Button>
+                </>
+              }
+            />
           )}
           <div className="space-y-6">
+            {shareStatus ? (
+              <Card className="rounded-[28px] border-slate-200/70 bg-white/90 dark:border-slate-800 dark:bg-slate-900/85">
+                <CardContent className="p-4">
+                  <p className="text-sm text-slate-600 dark:text-slate-300">{shareStatus}</p>
+                  {shareUrl ? (
+                    <p className="mt-2 truncate text-xs text-slate-500 dark:text-slate-400">
+                      {shareUrl}
+                    </p>
+                  ) : null}
+                </CardContent>
+              </Card>
+            ) : null}
             <Card className="rounded-[28px] border-slate-200/70 bg-white/90 dark:border-slate-800 dark:bg-slate-900/85">
               <CardContent className="p-6">
                 <p className="text-sm font-semibold uppercase tracking-[0.16em] text-blue-600">

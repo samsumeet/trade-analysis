@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { ShieldAlert, Sparkles } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -6,9 +7,17 @@ import { StockAnalysisData } from "@/types/stock";
 
 interface SampleReportProps {
   analysis: StockAnalysisData;
+  actions?: ReactNode;
+  eyebrow?: string;
+  title?: string;
 }
 
-export function SampleReport({ analysis }: SampleReportProps) {
+export function SampleReport({
+  analysis,
+  actions,
+  eyebrow = "Live Analysis Brief",
+  title
+}: SampleReportProps) {
   return (
     <Card
       id="analysis-brief"
@@ -18,13 +27,14 @@ export function SampleReport({ analysis }: SampleReportProps) {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-sm uppercase tracking-[0.18em] text-blue-300">
-              Live Analysis Brief
+              {eyebrow}
             </p>
             <CardTitle className="mt-2 text-2xl text-white">
-              {analysis.symbol} Executive Trade Brief
+              {title ?? `${analysis.symbol} Executive Trade Brief`}
             </CardTitle>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            {actions}
             <Badge variant="bullish">AI confidence {analysis.confidenceScore}/100</Badge>
             <Badge variant="default" className="bg-white/10 text-slate-100">
               Analyst terminal format

@@ -58,3 +58,14 @@ body {
 .text-balance {
   text-wrap: balance;
 }
+
+@media print {
+  html,
+  body {
+    background: #ffffff !important;
+  }
+
+  .print-hidden {
+    display: none !important;
+  }
+}
