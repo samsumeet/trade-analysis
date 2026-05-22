@@ -13,10 +13,10 @@ const tiers = [
   {
     name: "Free Preview",
     price: "$0",
-    description: "One guest analysis, then up to 3 stock analyses per day after sign-in.",
+    description: "One guest analysis, then up to 5 stock analyses per day after sign-in.",
     features: [
       "1 stock analysis without login",
-      "3 stock analyses per day on free account",
+      "5 stock analyses per day on free account",
       "Indicator snapshot",
       "Bull and bear case summary",
       "Basic trade plan outline"

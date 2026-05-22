@@ -21,7 +21,8 @@ export function BrandLogo({
         width={380}
         height={86}
         priority={priority}
-        className="h-11 w-auto dark:hidden sm:h-12"
+        sizes="(max-width: 640px) 180px, 240px"
+        className="h-9 w-auto dark:hidden sm:h-11 md:h-12"
       />
       <Image
         src="/brand/ai-stock-analysis-logo-dark.svg"
@@ -29,7 +30,8 @@ export function BrandLogo({
         width={380}
         height={86}
         priority={priority}
-        className="hidden h-11 w-auto dark:block sm:h-12"
+        sizes="(max-width: 640px) 180px, 240px"
+        className="hidden h-9 w-auto dark:block sm:h-11 md:h-12"
       />
     </a>
   );

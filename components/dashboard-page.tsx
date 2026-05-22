@@ -26,6 +26,7 @@ import { useAuth } from "@/components/auth-provider";
 import { DashboardLoader } from "@/components/dashboard-loader";
 import { DashboardStatus } from "@/components/dashboard-status";
 import { Footer } from "@/components/footer";
+import { InstallAppCta } from "@/components/install-app-cta";
 import { SampleReport } from "@/components/sample-report";
 import { SiteHeader } from "@/components/site-header";
 import { TickerSearch } from "@/components/ticker-search";
@@ -735,6 +736,10 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
           ctaHref="/"
           ctaLabel="Back Home"
         />
+
+        <div className="container mt-2 sm:mt-4">
+          <InstallAppCta variant="banner" />
+        </div>
 
         <section className="container pb-8 pt-6 sm:pb-12">
           <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">

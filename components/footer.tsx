@@ -19,7 +19,7 @@ export function Footer() {
                 className="h-10 w-10"
               />
             </div>
-            <BrandLogo className="max-w-[260px]" />
+            <BrandLogo className="max-w-[200px] sm:max-w-[260px]" />
           </div>
           <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500 dark:text-slate-400">
             Market analysis is for informational purposes only and is not

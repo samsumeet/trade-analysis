@@ -232,7 +232,7 @@ export function TickerSearch({
         </div>
       ) : null}
 
-      <div className="flex flex-col gap-3 rounded-[28px] border border-white/70 bg-white/75 p-3 shadow-soft backdrop-blur dark:border-slate-800 dark:bg-slate-900/80 xl:flex-row">
+      <div className="flex flex-col gap-3 rounded-[24px] border border-white/70 bg-white/75 p-3 shadow-soft backdrop-blur dark:border-slate-800 dark:bg-slate-900/80 xl:flex-row">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
           <Input
@@ -283,7 +283,7 @@ export function TickerSearch({
               window.setTimeout(() => setIsAutocompleteOpen(false), 120);
             }}
             placeholder="Search any US stock ticker, for example NVDA or AAPL"
-            className="h-14 border-white/80 bg-white pl-11 text-base dark:border-slate-700 dark:bg-slate-900"
+            className="h-13 sm:h-14 border-white/80 bg-white pl-11 text-base dark:border-slate-700 dark:bg-slate-900"
           />
           {isAutocompleteOpen && suggestions.length > 0 ? (
             <div className="absolute left-0 right-0 top-[calc(100%+0.6rem)] z-30 overflow-hidden rounded-[24px] border border-slate-200/80 bg-white/95 p-2 shadow-2xl backdrop-blur dark:border-slate-800 dark:bg-slate-950/95">
@@ -323,11 +323,11 @@ export function TickerSearch({
           ) : null}
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Button size="lg" className="gap-2" onClick={handleAnalyze}>
+          <Button size="lg" className="w-full gap-2 sm:w-auto" onClick={handleAnalyze}>
             Analyze a Stock
             <ArrowRight className="h-4 w-4" />
           </Button>
-          <Button variant="secondary" size="lg" onClick={handleSampleReport}>
+          <Button variant="secondary" size="lg" className="w-full sm:w-auto" onClick={handleSampleReport}>
             View Analysis Brief
           </Button>
         </div>

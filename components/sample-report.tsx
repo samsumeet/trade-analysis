@@ -33,7 +33,7 @@ export function SampleReport({
               {title ?? `${analysis.symbol} Executive Trade Brief`}
             </CardTitle>
           </div>
-          <div className="flex flex-wrap items-center justify-end gap-3">
+          <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-3">
             {actions}
             <Badge variant="bullish">AI confidence {analysis.confidenceScore}/100</Badge>
             <Badge variant="default" className="bg-white/10 text-slate-100">

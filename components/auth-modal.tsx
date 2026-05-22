@@ -132,10 +132,10 @@ export function AuthModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-lg">
-      <Card className="w-full max-w-3xl overflow-hidden rounded-[32px] border-white/10 bg-white/95 shadow-2xl dark:bg-slate-950">
+    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/70 p-3 sm:p-4 backdrop-blur-lg">
+      <Card className="max-h-[92vh] w-full max-w-3xl overflow-hidden rounded-[28px] border-white/10 bg-white/95 shadow-2xl dark:bg-slate-950">
         <CardContent className="grid gap-0 p-0 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="bg-[linear-gradient(135deg,#0f172a,#1d4ed8,#0f766e)] p-8 text-white">
+          <div className="bg-[linear-gradient(135deg,#0f172a,#1d4ed8,#0f766e)] p-6 text-white sm:p-8">
             <p className="text-sm uppercase tracking-[0.18em] text-blue-200">Authentication Layer</p>
             <h2 className="mt-4 text-3xl font-semibold leading-tight">{title}</h2>
             <p className="mt-4 text-sm leading-7 text-slate-200">{description}</p>
@@ -155,7 +155,7 @@ export function AuthModal({
             </div>
           </div>
 
-          <div className="p-6 sm:p-8">
+          <div className="max-h-[92vh] overflow-y-auto p-5 sm:p-8">
             <div className="flex flex-wrap gap-2">
               {[
                 ["google", "Gmail"],

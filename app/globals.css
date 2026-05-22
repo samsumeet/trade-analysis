@@ -12,6 +12,7 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
@@ -22,6 +23,8 @@ body {
   background-image:
     radial-gradient(circle at top, rgba(59, 130, 246, 0.08), transparent 30%),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 1));
+  overflow-x: hidden;
+  touch-action: manipulation;
 }
 
 .dark body {
@@ -33,6 +36,18 @@ body {
 
 * {
   @apply border-border;
+  -webkit-tap-highlight-color: transparent;
+}
+
+img,
+svg,
+canvas,
+video {
+  max-width: 100%;
+}
+
+.container {
+  @apply mx-auto w-full px-4 sm:px-6 lg:px-8;
 }
 
 .glass-panel {
@@ -57,6 +72,10 @@ body {
 
 .text-balance {
   text-wrap: balance;
+}
+
+.safe-pb {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 1rem);
 }
 
 @media print {

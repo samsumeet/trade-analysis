@@ -18,6 +18,7 @@ import {
 import { FeatureCard } from "@/components/feature-card";
 import { Footer } from "@/components/footer";
 import { Hero } from "@/components/hero";
+import { InstallAppCta } from "@/components/install-app-cta";
 import { Pricing } from "@/components/pricing";
 import { SectionHeading } from "@/components/section-heading";
 import { SiteHeader } from "@/components/site-header";
@@ -113,6 +114,10 @@ export function HomePage() {
         activeTicker={activeTicker}
         setActiveTicker={setActiveTicker}
       />
+
+      <section className="container mt-8 sm:mt-10">
+        <InstallAppCta variant="banner" />
+      </section>
 
       <section className="container mt-24">
         <SectionHeading

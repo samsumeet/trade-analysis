@@ -78,9 +78,9 @@ export function AnalysisDashboard({
               </p>
               <div className="mt-3 flex flex-wrap items-center gap-4">
                 <div>
-                  <h3 className="text-3xl font-semibold">
+                  <h3 className="text-2xl font-semibold sm:text-3xl">
                     {analysis.symbol}
-                    <span className="ml-3 text-lg font-medium text-slate-400">
+                    <span className="ml-0 mt-1 block text-base font-medium text-slate-400 sm:ml-3 sm:mt-0 sm:inline">
                       {analysis.companyName}
                     </span>
                   </h3>
@@ -133,7 +133,7 @@ export function AnalysisDashboard({
           </div>
 
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
-            <motion.div layout className="dashboard-panel rounded-[28px] p-5 sm:p-6">
+            <motion.div layout className="dashboard-panel overflow-hidden rounded-[28px] p-4 sm:p-6">
               <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h4 className="text-lg font-semibold text-white">
@@ -143,7 +143,7 @@ export function AnalysisDashboard({
                     Supertrend, EMA 21, EMA 55, and 200-day moving average
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-2 text-xs text-slate-300">
+                <div className="flex flex-wrap gap-2 text-[11px] text-slate-300 sm:text-xs">
                   {[
                     ["Price", "bg-blue-400"],
                     ["Supertrend Bull", "bg-emerald-400"],
@@ -179,7 +179,7 @@ export function AnalysisDashboard({
               <CardHeader>
                 <CardTitle className="text-slate-950 dark:text-slate-50">MACD histogram preview</CardTitle>
               </CardHeader>
-              <CardContent className="h-[260px] pt-0">
+              <CardContent className="h-[220px] sm:h-[260px] pt-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={analysis.macdSeries}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -214,7 +214,7 @@ export function AnalysisDashboard({
               <CardHeader>
                 <CardTitle className="text-slate-950 dark:text-slate-50">RSI line preview</CardTitle>
               </CardHeader>
-              <CardContent className="h-[260px] pt-0">
+              <CardContent className="h-[220px] sm:h-[260px] pt-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={analysis.rsiSeries}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
