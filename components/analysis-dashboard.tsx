@@ -254,7 +254,7 @@ export function AnalysisDashboard({
               <div>
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div>
-                    <h4 className="text-xl font-semibold text-slate-950">
+                    <h4 className="text-lg font-semibold text-slate-950 sm:text-xl">
                       Live key levels
                     </h4>
                     <p className="text-sm text-slate-500">
@@ -282,7 +282,7 @@ export function AnalysisDashboard({
               <div>
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div>
-                    <h4 className="text-xl font-semibold text-slate-950">
+                    <h4 className="text-lg font-semibold text-slate-950 sm:text-xl">
                       Entry and exit trade plan
                     </h4>
                     <p className="text-sm text-slate-500">

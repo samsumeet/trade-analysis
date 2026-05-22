@@ -1031,39 +1031,41 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
             <Card className="glass-panel rounded-[32px] border-white/70 shadow-soft dark:border-slate-800">
               <CardContent className="p-5 sm:p-6">
                 <div className="space-y-5">
-                <div className="rounded-[28px] border border-slate-200/70 bg-slate-950 p-5 text-white">
+                <div className="rounded-[28px] border border-slate-200/70 bg-slate-950 p-4 text-white sm:p-5">
                   {analysis ? (
                     <>
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <p className="text-sm uppercase tracking-[0.16em] text-blue-300">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0">
+                          <p className="text-xs uppercase tracking-[0.16em] text-blue-300 sm:text-sm">
                             Live workspace
                           </p>
-                          <h2 className="mt-3 text-3xl font-semibold">{analysis.symbol}</h2>
-                          <p className="mt-2 text-sm leading-6 text-slate-400">
+                          <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:mt-3 sm:text-3xl">
+                            {analysis.symbol}
+                          </h2>
+                          <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300 sm:text-sm sm:leading-6">
                             {analysis.aiSummary}
                           </p>
                         </div>
-                        <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">
+                        <div className="w-fit rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-200 sm:px-4 sm:py-2 sm:text-sm">
                           Confidence {analysis.confidenceScore}/100
                         </div>
                       </div>
 
-                      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                      <div className="mt-5 grid gap-3 sm:mt-6 sm:grid-cols-2">
                         {dashboardCards.map(({ icon: Icon, label, getValue }) => (
                           <div
                             key={label}
-                            className="rounded-2xl border border-white/10 bg-white/5 p-4"
+                            className="rounded-2xl border border-white/10 bg-white/5 p-3.5 sm:p-4"
                           >
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-start gap-3">
                               <div className="rounded-2xl bg-white/10 p-2">
                                 <Icon className="h-4 w-4 text-blue-300" />
                               </div>
-                              <div>
-                                <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
+                              <div className="min-w-0">
+                                <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400 sm:text-xs">
                                   {label}
                                 </p>
-                                <p className="mt-1 text-sm font-medium text-white">
+                                <p className="mt-1 break-words text-sm font-medium leading-6 text-white">
                                   {getValue(analysis)}
                                 </p>
                               </div>
@@ -1072,10 +1074,10 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                         ))}
                       </div>
 
-                      <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4">
+                      <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4 sm:mt-6">
                         <div className="flex items-start gap-3">
-                          <ArrowUpRight className="mt-0.5 h-4 w-4 text-emerald-300" />
-                          <p className="text-sm leading-7 text-slate-200">
+                          <ArrowUpRight className="mt-1 h-4 w-4 shrink-0 text-emerald-300" />
+                          <p className="text-sm leading-6 text-slate-200 sm:leading-7">
                             Execution focus: {analysis.tradePlan[0]?.note}
                           </p>
                         </div>
@@ -1083,14 +1085,14 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                     </>
                   ) : (
                     <div className="space-y-5">
-                      <div>
-                        <p className="text-sm uppercase tracking-[0.16em] text-blue-300">
+                      <div className="min-w-0">
+                        <p className="text-xs uppercase tracking-[0.16em] text-blue-300 sm:text-sm">
                           Live workspace
                         </p>
-                        <h2 className="mt-3 text-3xl font-semibold">
+                        <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:mt-3 sm:text-3xl">
                           {activeTicker || "Pick a stock"}
                         </h2>
-                        <p className="mt-3 max-w-xl text-sm leading-7 text-slate-300">
+                        <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300 sm:leading-7">
                           {activeTicker
                             ? "No live analysis is available right now. Retry the request and the dashboard will populate as soon as the server responds."
                             : "Enter a ticker above to load live analysis, technical structure, and the trade brief into this workspace."}
