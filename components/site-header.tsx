@@ -44,7 +44,7 @@ export function SiteHeader({
 
   return (
     <>
-      <header className="container py-4 sm:py-6">
+      <header className="container safe-pt pb-4 sm:pb-6">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <BrandLogo href="/" priority className="max-w-[220px] sm:max-w-none" />
