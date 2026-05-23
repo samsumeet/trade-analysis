@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect, useRef, useState } from "react";
-import { LockKeyhole, Mail, UserRound } from "lucide-react";
+import { LockKeyhole, Mail, Sparkles, UserRound, X } from "lucide-react";
 
 import { useAuth } from "@/components/auth-provider";
 import { Button } from "@/components/ui/button";
@@ -132,14 +132,33 @@ export function AuthModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/70 p-3 sm:p-4 backdrop-blur-lg">
-      <Card className="max-h-[92vh] w-full max-w-3xl overflow-hidden rounded-[28px] border-white/10 bg-white/95 shadow-2xl dark:bg-slate-950">
+    <div className="fixed inset-0 z-[90] flex items-end justify-center bg-slate-950/70 p-0 backdrop-blur-lg sm:items-center sm:p-4">
+      <Card className="max-h-[94vh] w-full overflow-hidden rounded-t-[28px] border-white/10 bg-white/95 shadow-2xl dark:bg-slate-950 sm:max-w-3xl sm:rounded-[28px]">
         <CardContent className="grid gap-0 p-0 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="bg-[linear-gradient(135deg,#0f172a,#1d4ed8,#0f766e)] p-6 text-white sm:p-8">
-            <p className="text-sm uppercase tracking-[0.18em] text-blue-200">Authentication Layer</p>
-            <h2 className="mt-4 text-3xl font-semibold leading-tight">{title}</h2>
-            <p className="mt-4 text-sm leading-7 text-slate-200">{description}</p>
-            <div className="mt-8 space-y-3">
+          <div className="bg-[linear-gradient(135deg,#0f172a,#1d4ed8,#0f766e)] p-5 text-white sm:p-8">
+            <div className="flex items-start justify-between gap-4 lg:hidden">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[11px] uppercase tracking-[0.18em] text-blue-100">
+                <Sparkles className="h-3.5 w-3.5" />
+                Access unlocked
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                className="h-9 w-9 text-white hover:bg-white/10 hover:text-white"
+                aria-label="Close authentication dialog"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <p className="mt-2 text-xs uppercase tracking-[0.18em] text-blue-200 sm:mt-0 sm:text-sm">
+              Authentication Layer
+            </p>
+            <h2 className="mt-3 text-2xl font-semibold leading-tight sm:mt-4 sm:text-3xl">{title}</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-200 sm:mt-4 sm:leading-7">{description}</p>
+            <div className="mt-5 grid gap-2.5 sm:mt-8 sm:space-y-0">
               {[
                 "One free stock analysis without login",
                 "Unlimited ticker analysis after sign-in",
@@ -147,7 +166,7 @@ export function AuthModal({
               ].map((item) => (
                 <div
                   key={item}
-                  className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white/90"
+                  className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm leading-6 text-white/90"
                 >
                   {item}
                 </div>
@@ -155,8 +174,29 @@ export function AuthModal({
             </div>
           </div>
 
-          <div className="max-h-[92vh] overflow-y-auto p-5 sm:p-8">
-            <div className="flex flex-wrap gap-2">
+          <div className="max-h-[94vh] overflow-y-auto p-4 pb-6 sm:p-8">
+            <div className="sticky top-0 z-10 -mx-4 -mt-4 border-b border-slate-200/80 bg-white/95 px-4 pb-4 pt-4 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95 sm:static sm:m-0 sm:border-0 sm:bg-transparent sm:p-0">
+              <div className="hidden items-start justify-between gap-4 lg:flex">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+                    Continue
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                    Pick Gmail, create an account, or log in.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={onClose}
+                  aria-label="Close authentication dialog"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="mt-0 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
               {[
                 ["google", "Gmail"],
                 ["register", "Create account"],
@@ -169,7 +209,7 @@ export function AuthModal({
                     setMode(currentMode as AuthMode);
                     setError("");
                   }}
-                  className={`rounded-full px-4 py-2 text-sm transition ${
+                  className={`w-full rounded-2xl px-4 py-3 text-sm font-medium transition sm:w-auto sm:rounded-full sm:py-2 ${
                     mode === currentMode
                       ? "bg-slate-900 text-white dark:bg-blue-500"
                       : "bg-slate-100 text-slate-600 dark:bg-slate-900 dark:text-slate-300"
@@ -179,8 +219,9 @@ export function AuthModal({
                 </button>
               ))}
             </div>
+            </div>
 
-            <div className="mt-6 space-y-4">
+            <div className="mt-5 space-y-4 sm:mt-6">
               {mode === "register" ? (
                 <FieldRow icon={UserRound}>
                   <Input
@@ -192,13 +233,13 @@ export function AuthModal({
               ) : null}
 
               {mode === "google" ? (
-                <div className="rounded-3xl border border-slate-200 bg-slate-50/80 p-5 dark:border-slate-800 dark:bg-slate-900/70">
-                  <p className="text-sm leading-7 text-slate-600 dark:text-slate-300">
+                <div className="rounded-3xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/70 sm:p-5">
+                  <p className="text-sm leading-6 text-slate-600 dark:text-slate-300 sm:leading-7">
                     Continue with your Google account to create or access your AI Stock Analyses profile.
                   </p>
                   {GOOGLE_CLIENT_ID ? (
                     <div className="mt-5">
-                      <div ref={googleButtonRef} className="min-h-11" />
+                      <div ref={googleButtonRef} className="min-h-11 overflow-hidden" />
                       {!googleReady ? (
                         <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
                           Loading Google sign-in...
@@ -236,12 +277,14 @@ export function AuthModal({
             </div>
 
             {error ? (
-              <p className="mt-4 text-sm text-rose-600 dark:text-rose-400">{error}</p>
+              <p className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm leading-6 text-rose-600 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-300">
+                {error}
+              </p>
             ) : null}
 
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               {mode !== "google" ? (
-                <Button type="button" onClick={submit} disabled={isSubmitting}>
+                <Button type="button" onClick={submit} disabled={isSubmitting} className="w-full sm:w-auto">
                   {isSubmitting
                     ? "Please wait..."
                     : mode === "register"
@@ -249,7 +292,7 @@ export function AuthModal({
                       : "Log in"}
                 </Button>
               ) : null}
-              <Button type="button" variant="secondary" onClick={onClose}>
+              <Button type="button" variant="secondary" onClick={onClose} className="w-full sm:w-auto">
                 Maybe later
               </Button>
             </div>
