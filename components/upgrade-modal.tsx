@@ -88,13 +88,13 @@ export function UpgradeModal({ isOpen, onClose, onSuccess }: UpgradeModalProps) 
     <div className="fixed inset-0 z-[95] flex items-end justify-center bg-slate-950/70 p-0 backdrop-blur-lg sm:items-center sm:p-4">
       <Card className="h-[92dvh] w-full overflow-hidden rounded-t-[28px] border-white/10 bg-white/95 shadow-2xl dark:bg-slate-950 sm:h-auto sm:max-h-[90dvh] sm:max-w-4xl sm:rounded-[32px]">
         <CardContent className="grid h-full min-h-0 gap-0 overflow-hidden p-0 lg:grid-cols-[0.95fr_1.05fr]">
-          <div className="overflow-y-auto bg-[linear-gradient(135deg,#082f49,#1d4ed8,#0f766e)] px-5 pb-6 pt-5 text-white overscroll-contain sm:p-8">
+          <div className="overflow-y-auto bg-[linear-gradient(135deg,#082f49,#1d4ed8,#0f766e)] px-4 pb-5 pt-4 text-white overscroll-contain sm:px-5 sm:pb-6 sm:pt-5 lg:p-8">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <p className="text-[11px] uppercase tracking-[0.22em] text-blue-200 sm:text-sm sm:tracking-[0.18em]">
                   Upgrade to Paid
                 </p>
-                <h2 className="mt-3 text-2xl font-semibold leading-tight sm:mt-4 sm:text-3xl">
+                <h2 className="mt-3 text-[1.65rem] font-semibold leading-tight sm:mt-4 sm:text-3xl">
                   Unlock unlimited stock analyses
                 </h2>
               </div>
@@ -108,12 +108,12 @@ export function UpgradeModal({ isOpen, onClose, onSuccess }: UpgradeModalProps) 
               </button>
             </div>
 
-            <p className="mt-4 text-sm leading-6 text-slate-100 sm:leading-7">
+            <p className="mt-3 text-[13px] leading-5 text-slate-100 sm:mt-4 sm:text-sm sm:leading-7">
               Free accounts can analyze up to 5 stocks per day. Paid accounts can
               run unlimited live analyses with the same dashboard and AI workflow.
             </p>
 
-            <div className="mt-6 grid gap-3 sm:mt-8">
+            <div className="mt-5 grid gap-2.5 sm:mt-8 sm:gap-3">
               {[
                 "Unlimited live stock analyses",
                 "No daily cap after upgrade",
@@ -121,14 +121,14 @@ export function UpgradeModal({ isOpen, onClose, onSuccess }: UpgradeModalProps) 
               ].map((item) => (
                 <div
                   key={item}
-                  className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm leading-6 text-white/90"
+                  className="rounded-2xl border border-white/10 bg-white/10 px-3.5 py-2.5 text-[13px] leading-5 text-white/90 sm:px-4 sm:py-3 sm:text-sm sm:leading-6"
                 >
                   {item}
                 </div>
               ))}
             </div>
 
-            <div className="mt-6 rounded-3xl border border-white/10 bg-white/10 p-4 sm:mt-8 sm:p-5">
+            <div className="mt-5 rounded-3xl border border-white/10 bg-white/10 p-3.5 sm:mt-8 sm:p-5">
               <p className="text-[11px] uppercase tracking-[0.22em] text-blue-100 sm:text-xs sm:tracking-[0.18em]">
                 Plan
               </p>
@@ -136,39 +136,39 @@ export function UpgradeModal({ isOpen, onClose, onSuccess }: UpgradeModalProps) 
                 <span className="text-3xl font-semibold sm:text-4xl">$20</span>
                 <span className="pb-1 text-sm text-slate-200">/ month</span>
               </div>
-              <p className="mt-3 text-sm leading-6 text-slate-200">
+              <p className="mt-3 text-[13px] leading-5 text-slate-200 sm:text-sm sm:leading-6">
                 Pro Trader gives the account unlimited daily analysis access.
               </p>
             </div>
           </div>
 
-          <div className="min-h-0 overflow-y-auto p-5 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] overscroll-contain sm:p-8">
-            <div className="sticky top-0 z-10 -mx-5 -mt-5 mb-5 border-b border-slate-200/80 bg-white/95 px-5 pb-4 pt-5 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95 sm:static sm:m-0 sm:border-0 sm:bg-transparent sm:p-0 sm:pb-0">
+          <div className="min-h-0 overflow-y-auto p-4 pb-[max(1.25rem,calc(env(safe-area-inset-bottom)+0.85rem))] overscroll-contain sm:p-5 sm:pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] lg:p-8">
+            <div className="sticky top-0 z-10 -mx-4 -mt-4 mb-4 border-b border-slate-200/80 bg-white/95 px-4 pb-3 pt-4 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95 sm:-mx-5 sm:-mt-5 sm:mb-5 sm:px-5 sm:pb-4 sm:pt-5 lg:static lg:m-0 lg:border-0 lg:bg-transparent lg:p-0 lg:pb-0">
               <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <p className="text-[11px] uppercase tracking-[0.22em] text-sky-600 dark:text-sky-300">
-                  Secure checkout
-                </p>
-                {step === "details" ? (
-                  <>
-                    <h3 className="mt-2 text-xl font-semibold text-slate-950 dark:text-slate-50 sm:text-2xl">
-                      Enter payment details
-                    </h3>
-                    <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300 sm:leading-7">
-                      This checkout module upgrades the account immediately after confirmation.
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <h3 className="mt-2 text-xl font-semibold text-slate-950 dark:text-slate-50 sm:text-2xl">
-                      Confirm upgrade
-                    </h3>
-                    <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300 sm:leading-7">
-                      Review the payment and confirm to activate unlimited stock analysis.
-                    </p>
-                  </>
-                )}
-              </div>
+                <div className="min-w-0">
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-sky-600 dark:text-sky-300">
+                    Secure checkout
+                  </p>
+                  {step === "details" ? (
+                    <>
+                      <h3 className="mt-2 text-lg font-semibold text-slate-950 dark:text-slate-50 sm:text-xl lg:text-2xl">
+                        Enter payment details
+                      </h3>
+                      <p className="mt-2 text-[13px] leading-5 text-slate-600 dark:text-slate-300 sm:text-sm sm:leading-7">
+                        This checkout module upgrades the account immediately after confirmation.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="mt-2 text-lg font-semibold text-slate-950 dark:text-slate-50 sm:text-xl lg:text-2xl">
+                        Confirm upgrade
+                      </h3>
+                      <p className="mt-2 text-[13px] leading-5 text-slate-600 dark:text-slate-300 sm:text-sm sm:leading-7">
+                        Review the payment and confirm to activate unlimited stock analysis.
+                      </p>
+                    </>
+                  )}
+                </div>
                 <button
                   type="button"
                   onClick={handleClose}
@@ -182,7 +182,7 @@ export function UpgradeModal({ isOpen, onClose, onSuccess }: UpgradeModalProps) 
 
             {step === "details" ? (
               <>
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <FieldRow icon={UserRound}>
                     <Input
                       value={cardholderName}
@@ -214,7 +214,7 @@ export function UpgradeModal({ isOpen, onClose, onSuccess }: UpgradeModalProps) 
                   </p>
                 ) : null}
 
-                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <div className="mt-5 flex flex-col gap-2.5 sm:mt-6 sm:gap-3 sm:flex-row sm:flex-wrap">
                   <Button
                     type="button"
                     onClick={handleStartCheckout}
@@ -235,7 +235,7 @@ export function UpgradeModal({ isOpen, onClose, onSuccess }: UpgradeModalProps) 
               </>
             ) : (
               <>
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/70">
                     <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Plan</p>
                     <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
@@ -264,7 +264,7 @@ export function UpgradeModal({ isOpen, onClose, onSuccess }: UpgradeModalProps) 
                   </p>
                 ) : null}
 
-                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <div className="mt-5 flex flex-col gap-2.5 sm:mt-6 sm:gap-3 sm:flex-row sm:flex-wrap">
                   <Button
                     type="button"
                     onClick={handleConfirmCheckout}

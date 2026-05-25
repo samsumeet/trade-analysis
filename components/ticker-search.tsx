@@ -117,12 +117,12 @@ export function TickerSearch({
   return (
     <div className="space-y-4">
       {pendingTicker || analysisLoading ? (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/70 p-3 sm:p-4 backdrop-blur-xl">
-          <Card className="max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-[28px] border-white/10 bg-[linear-gradient(145deg,rgba(15,23,42,0.97),rgba(15,23,42,0.92),rgba(30,64,175,0.88))] text-white shadow-2xl">
-            <CardContent className="max-h-[92vh] overflow-y-auto p-4 sm:p-8 lg:p-10">
+        <div className="fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/70 p-0 backdrop-blur-xl sm:items-center sm:p-4">
+          <Card className="h-[92dvh] w-full overflow-hidden rounded-t-[28px] border-white/10 bg-[linear-gradient(145deg,rgba(15,23,42,0.97),rgba(15,23,42,0.92),rgba(30,64,175,0.88))] text-white shadow-2xl sm:h-auto sm:max-h-[92vh] sm:max-w-5xl sm:rounded-[28px]">
+            <CardContent className="h-full overflow-y-auto p-4 pb-[max(1.25rem,calc(env(safe-area-inset-bottom)+0.85rem))] overscroll-contain sm:max-h-[92vh] sm:p-8 lg:p-10">
               <div className="grid gap-5 sm:gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-8">
                 <div>
-                  <div className="inline-flex rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-100 sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.2em]">
+                  <div className="inline-flex rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-100 sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.2em]">
                     Launching live stock analysis
                   </div>
                   <div className="mt-4 flex items-center gap-3 sm:mt-6 sm:gap-4">
@@ -134,15 +134,15 @@ export function TickerSearch({
                       <BrainCircuit className="h-6 w-6 sm:h-8 sm:w-8" />
                     </motion.div>
                     <div className="min-w-0">
-                      <p className="text-xs uppercase tracking-[0.16em] text-slate-300 sm:text-sm sm:tracking-[0.18em]">
+                      <p className="text-[11px] uppercase tracking-[0.16em] text-slate-300 sm:text-sm sm:tracking-[0.18em]">
                         Preparing dashboard for
                       </p>
-                      <h3 className="mt-1 break-words text-2xl font-semibold tracking-tight sm:mt-2 sm:text-4xl">
+                      <h3 className="mt-1 break-words text-[1.7rem] font-semibold tracking-tight sm:mt-2 sm:text-4xl">
                         {pendingTicker || activeTicker}
                       </h3>
                     </div>
                   </div>
-                  <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-200 sm:mt-6 sm:text-base sm:leading-8">
+                  <p className="mt-4 max-w-2xl text-[13px] leading-6 text-slate-200 sm:mt-6 sm:text-base sm:leading-8">
                     Streaming market context, technical structure, trade levels, and
                     AI scenario framing into a live research terminal.
                   </p>
@@ -164,7 +164,7 @@ export function TickerSearch({
                           <div className="rounded-2xl bg-white/10 p-2 text-cyan-200">
                             <Icon className="h-4 w-4" />
                           </div>
-                          <p className="text-sm font-medium text-white">{label}</p>
+                          <p className="text-[13px] font-medium text-white sm:text-sm">{label}</p>
                         </div>
                       </motion.div>
                     ))}
@@ -174,10 +174,10 @@ export function TickerSearch({
                 <div className="rounded-[26px] border border-white/10 bg-slate-950/75 p-4 sm:rounded-[30px] sm:p-6">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0">
-                      <p className="text-xs uppercase tracking-[0.16em] text-blue-300 sm:text-sm">
+                      <p className="text-[11px] uppercase tracking-[0.16em] text-blue-300 sm:text-sm">
                         Market engine
                       </p>
-                      <p className="mt-1 text-base font-medium text-white sm:mt-2 sm:text-lg">
+                      <p className="mt-1 text-sm font-medium text-white sm:mt-2 sm:text-lg">
                         Building a stock-specific setup
                       </p>
                     </div>
@@ -191,7 +191,7 @@ export function TickerSearch({
                   </div>
 
                   <div className="chart-surface mt-4 rounded-[24px] border border-white/10 p-3 sm:mt-6 sm:rounded-[28px] sm:p-5">
-                    <div className="flex h-32 items-end gap-1.5 sm:h-52 sm:gap-2">
+                    <div className="flex h-28 items-end gap-1.5 sm:h-52 sm:gap-2">
                       {overlayBars.map((height, index) => (
                         <motion.div
                           key={`${height}-${index}`}
@@ -219,7 +219,7 @@ export function TickerSearch({
                         key={item}
                         animate={{ opacity: [0.45, 1, 0.45] }}
                         transition={{ duration: 1.8, repeat: Infinity, delay: index * 0.22 }}
-                        className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-slate-200 sm:px-4 sm:py-3"
+                        className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2.5 text-[13px] text-slate-200 sm:px-4 sm:py-3 sm:text-sm"
                       >
                         {item}
                       </motion.div>

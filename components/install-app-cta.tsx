@@ -91,13 +91,13 @@ export function InstallAppCta({ variant = "button" }: InstallAppCtaProps) {
 
 function IosInstallHelp({ onClose }: { onClose: () => void }) {
   return (
-    <div className="fixed inset-0 z-[95] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-lg">
-      <Card className="w-full max-w-lg rounded-[28px] border-white/10 bg-white/95 shadow-2xl dark:bg-slate-950">
-        <CardContent className="p-6 sm:p-7">
+    <div className="fixed inset-0 z-[95] flex items-end justify-center bg-slate-950/70 p-0 backdrop-blur-lg sm:items-center sm:p-4">
+      <Card className="h-[88dvh] w-full overflow-hidden rounded-t-[28px] border-white/10 bg-white/95 shadow-2xl dark:bg-slate-950 sm:h-auto sm:max-h-[88dvh] sm:max-w-lg sm:rounded-[28px]">
+        <CardContent className="h-full overflow-y-auto p-5 pb-[max(1.25rem,calc(env(safe-area-inset-bottom)+0.85rem))] overscroll-contain sm:p-6 sm:pb-7">
           <div className="flex items-start justify-between gap-4">
             <div>
               <Badge variant="info">Install on iPhone</Badge>
-              <h3 className="mt-3 text-2xl font-semibold text-slate-950 dark:text-slate-50">
+              <h3 className="mt-3 text-xl font-semibold text-slate-950 dark:text-slate-50 sm:text-2xl">
                 Add this app from Safari
               </h3>
             </div>
@@ -105,7 +105,7 @@ function IosInstallHelp({ onClose }: { onClose: () => void }) {
               <X className="h-4 w-4" />
             </Button>
           </div>
-          <ol className="mt-5 space-y-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
+          <ol className="mt-5 space-y-3 text-[13px] leading-6 text-slate-600 dark:text-slate-300 sm:text-sm sm:leading-7">
             <li>1. Open this site in Safari on your iPhone or iPad.</li>
             <li>2. Tap the Share button in the browser toolbar.</li>
             <li>3. Choose “Add to Home Screen”.</li>

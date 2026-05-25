@@ -79,7 +79,7 @@ export function AuthModal({
         type: "standard",
         text: "continue_with",
         shape: "pill",
-        width: 320
+        width: typeof window !== "undefined" && window.innerWidth < 420 ? 280 : 320
       });
       setGoogleReady(true);
     };
@@ -133,9 +133,9 @@ export function AuthModal({
 
   return (
     <div className="fixed inset-0 z-[90] flex items-end justify-center bg-slate-950/70 p-0 backdrop-blur-lg sm:items-center sm:p-4">
-      <Card className="max-h-[94vh] w-full overflow-hidden rounded-t-[28px] border-white/10 bg-white/95 shadow-2xl dark:bg-slate-950 sm:max-w-3xl sm:rounded-[28px]">
-        <CardContent className="grid gap-0 p-0 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="bg-[linear-gradient(135deg,#0f172a,#1d4ed8,#0f766e)] p-5 text-white sm:p-8">
+      <Card className="h-[84dvh] w-full overflow-hidden rounded-t-[24px] border-white/10 bg-white/95 shadow-2xl dark:bg-slate-950 sm:h-auto sm:max-h-[90dvh] sm:max-w-3xl sm:rounded-[28px]">
+        <CardContent className="grid h-full min-h-0 gap-0 overflow-hidden p-0 lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="hidden overflow-y-auto bg-[linear-gradient(135deg,#0f172a,#1d4ed8,#0f766e)] px-4 pb-4 pt-4 text-white overscroll-contain lg:block lg:p-8">
             <div className="flex items-start justify-between gap-4 lg:hidden">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[11px] uppercase tracking-[0.18em] text-blue-100">
                 <Sparkles className="h-3.5 w-3.5" />
@@ -153,12 +153,16 @@ export function AuthModal({
               </Button>
             </div>
 
-            <p className="mt-2 text-xs uppercase tracking-[0.18em] text-blue-200 sm:mt-0 sm:text-sm">
+            <p className="mt-2 text-[10px] uppercase tracking-[0.18em] text-blue-200 sm:mt-0 sm:text-sm">
               Authentication Layer
             </p>
-            <h2 className="mt-3 text-2xl font-semibold leading-tight sm:mt-4 sm:text-3xl">{title}</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-200 sm:mt-4 sm:leading-7">{description}</p>
-            <div className="mt-5 grid gap-2.5 sm:mt-8 sm:space-y-0">
+            <h2 className="mt-2.5 text-[1.35rem] font-semibold leading-tight sm:mt-4 sm:text-3xl">
+              {title}
+            </h2>
+            <p className="mt-2.5 text-[13px] leading-5 text-slate-200 sm:mt-4 sm:text-sm sm:leading-7">
+              {description}
+            </p>
+            <div className="mt-4 grid gap-2 sm:mt-8 sm:space-y-0">
               {[
                 "One free stock analysis without login",
                 "Unlimited ticker analysis after sign-in",
@@ -166,7 +170,7 @@ export function AuthModal({
               ].map((item) => (
                 <div
                   key={item}
-                  className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm leading-6 text-white/90"
+                  className="rounded-2xl border border-white/10 bg-white/10 px-3 py-2 text-[12px] leading-5 text-white/90 sm:px-4 sm:py-3 sm:text-sm sm:leading-6"
                 >
                   {item}
                 </div>
@@ -174,8 +178,32 @@ export function AuthModal({
             </div>
           </div>
 
-          <div className="max-h-[94vh] overflow-y-auto p-4 pb-6 sm:p-8">
-            <div className="sticky top-0 z-10 -mx-4 -mt-4 border-b border-slate-200/80 bg-white/95 px-4 pb-4 pt-4 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95 sm:static sm:m-0 sm:border-0 sm:bg-transparent sm:p-0">
+          <div className="flex min-h-0 flex-col overflow-hidden p-3.5 pb-[max(1rem,calc(env(safe-area-inset-bottom)+0.75rem))] sm:p-8">
+            <div className="sticky top-0 z-10 -mx-3.5 -mt-3.5 border-b border-slate-200/80 bg-white/95 px-3.5 pb-3 pt-3.5 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95 sm:static sm:m-0 sm:border-0 sm:bg-transparent sm:p-0">
+              <div className="mb-3 flex items-start justify-between gap-4 lg:hidden">
+                <div className="min-w-0">
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-sky-600 dark:text-sky-300">
+                    Continue
+                  </p>
+                  <h3 className="mt-1.5 text-lg font-semibold text-slate-950 dark:text-slate-50">
+                    {mode === "google"
+                      ? "Continue with Gmail"
+                      : mode === "register"
+                        ? "Create your account"
+                        : "Log in to continue"}
+                  </h3>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={onClose}
+                  aria-label="Close authentication dialog"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+
               <div className="hidden items-start justify-between gap-4 lg:flex">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
@@ -196,32 +224,32 @@ export function AuthModal({
                 </Button>
               </div>
 
-              <div className="mt-0 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-              {[
-                ["google", "Gmail"],
-                ["register", "Create account"],
-                ["login", "Log in"]
-              ].map(([currentMode, label]) => (
-                <button
-                  key={currentMode}
-                  type="button"
-                  onClick={() => {
-                    setMode(currentMode as AuthMode);
-                    setError("");
-                  }}
-                  className={`w-full rounded-2xl px-4 py-3 text-sm font-medium transition sm:w-auto sm:rounded-full sm:py-2 ${
-                    mode === currentMode
-                      ? "bg-slate-900 text-white dark:bg-blue-500"
-                      : "bg-slate-100 text-slate-600 dark:bg-slate-900 dark:text-slate-300"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+              <div className="mt-0 flex flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:gap-2">
+                {[
+                  ["google", "Gmail"],
+                  ["register", "Create account"],
+                  ["login", "Log in"]
+                ].map(([currentMode, label]) => (
+                  <button
+                    key={currentMode}
+                    type="button"
+                    onClick={() => {
+                      setMode(currentMode as AuthMode);
+                      setError("");
+                    }}
+                    className={`w-full rounded-2xl px-3 py-2.5 text-[13px] font-medium transition sm:w-auto sm:rounded-full sm:px-4 sm:py-2 sm:text-sm ${
+                      mode === currentMode
+                        ? "bg-slate-900 text-white dark:bg-blue-500"
+                        : "bg-slate-100 text-slate-600 dark:bg-slate-900 dark:text-slate-300"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div className="mt-5 space-y-4 sm:mt-6">
+            <div className="mt-4 flex-1 overflow-y-auto overscroll-contain pr-0.5 space-y-3 sm:mt-6 sm:space-y-4">
               {mode === "register" ? (
                 <FieldRow icon={UserRound}>
                   <Input
@@ -233,21 +261,16 @@ export function AuthModal({
               ) : null}
 
               {mode === "google" ? (
-                <div className="rounded-3xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/70 sm:p-5">
-                  <p className="text-sm leading-6 text-slate-600 dark:text-slate-300 sm:leading-7">
+                <div className="rounded-3xl border border-slate-200 bg-slate-50/80 p-3.5 dark:border-slate-800 dark:bg-slate-900/70 sm:p-5">
+                  <p className="text-[13px] leading-5 text-slate-600 dark:text-slate-300 sm:text-sm sm:leading-7">
                     Continue with your Google account to create or access your AI Stock Analyses profile.
                   </p>
                   {GOOGLE_CLIENT_ID ? (
-                    <div className="mt-5">
-                      <div ref={googleButtonRef} className="min-h-11 overflow-hidden" />
-                      {!googleReady ? (
-                        <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
-                          Loading Google sign-in...
-                        </p>
-                      ) : null}
-                    </div>
+                    <p className="mt-3 text-[12px] leading-5 text-slate-500 dark:text-slate-400 sm:mt-4 sm:text-sm">
+                      Use the secure Google button below to continue.
+                    </p>
                   ) : (
-                    <p className="mt-4 text-sm text-amber-600 dark:text-amber-400">
+                    <p className="mt-3 text-[13px] text-amber-600 dark:text-amber-400 sm:mt-4 sm:text-sm">
                       Google sign-in is not configured yet. Set `NEXT_PUBLIC_GOOGLE_CLIENT_ID`
                       in the frontend app to enable it.
                     </p>
@@ -277,25 +300,42 @@ export function AuthModal({
             </div>
 
             {error ? (
-              <p className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm leading-6 text-rose-600 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-300">
+              <p className="mt-3.5 rounded-2xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-[13px] leading-5 text-rose-600 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-300 sm:mt-4 sm:px-4 sm:py-3 sm:text-sm sm:leading-6">
                 {error}
               </p>
             ) : null}
 
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              {mode !== "google" ? (
-                <Button type="button" onClick={submit} disabled={isSubmitting} className="w-full sm:w-auto">
-                  {isSubmitting
-                    ? "Please wait..."
-                    : mode === "register"
-                      ? "Create account"
-                      : "Log in"}
-                </Button>
+            <div className="mt-3 border-t border-slate-200/80 bg-white/95 pt-3 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95 sm:mt-6 sm:border-0 sm:bg-transparent sm:pt-0">
+              {mode === "google" && GOOGLE_CLIENT_ID ? (
+                <div className="rounded-3xl border border-slate-200 bg-slate-50/80 p-3 dark:border-slate-800 dark:bg-slate-900/70 sm:max-w-fit sm:p-0 sm:border-0 sm:bg-transparent">
+                  <div ref={googleButtonRef} className="min-h-10 overflow-hidden" />
+                  {!googleReady ? (
+                    <p className="mt-2 text-[12px] text-slate-500 dark:text-slate-400 sm:text-sm">
+                      Loading Google sign-in...
+                    </p>
+                  ) : null}
+                </div>
               ) : null}
-              <Button type="button" variant="secondary" onClick={onClose} className="w-full sm:w-auto">
-                Maybe later
-              </Button>
+
+              <div className="mt-3 flex flex-col gap-2.5 sm:mt-4 sm:flex-row sm:flex-wrap sm:gap-3">
+                {mode !== "google" ? (
+                  <Button type="button" onClick={submit} disabled={isSubmitting} className="w-full sm:w-auto">
+                    {isSubmitting
+                      ? "Please wait..."
+                      : mode === "register"
+                        ? "Create account"
+                        : "Log in"}
+                  </Button>
+                ) : null}
+                <Button type="button" variant="secondary" onClick={onClose} className="w-full sm:w-auto">
+                  Maybe later
+                </Button>
+              </div>
             </div>
+
+            <p className="mt-3 text-[11px] leading-5 text-slate-500 dark:text-slate-400 sm:hidden">
+              Choose Gmail for the smallest flow, or create an account with basic details.
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -332,7 +372,9 @@ function FieldRow({
   return (
     <div className="relative">
       <Icon className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
-      <div className="[&_input]:pl-11">{children}</div>
+      <div className="[&_input]:h-10 [&_input]:pl-11 [&_input]:text-[13px] sm:[&_input]:h-11 sm:[&_input]:text-sm">
+        {children}
+      </div>
     </div>
   );
 }
