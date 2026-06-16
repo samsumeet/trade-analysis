@@ -1,3 +1,5 @@
+import type { TraderStyle } from "@/types/stock";
+
 export interface AuthUser {
   id: string;
   email: string;
@@ -31,6 +33,7 @@ export interface WatchlistItem {
 
 export interface AnalysisHistoryItem {
   ticker: string;
+  traderStyle: TraderStyle;
   companyName: string;
   currentPrice: number | null;
   trendBias: string;

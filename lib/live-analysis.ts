@@ -9,6 +9,7 @@ import {
   Scenario,
   SignalTone,
   StockAnalysisData,
+  TraderStyle,
   TradeLevel
 } from "@/types/stock";
 import { AnalysisAllowance, AuthUser, GuestUsage } from "@/types/auth";
@@ -43,12 +44,13 @@ export interface FetchAnalysisResult {
   allowance?: AnalysisAllowance;
 }
 
-export function createEmptyAnalysis(ticker: string): StockAnalysisData {
+export function createEmptyAnalysis(ticker: string, traderStyle: TraderStyle): StockAnalysisData {
   const normalizedTicker = getAnalysisTicker(ticker);
 
   return {
     symbol: normalizedTicker,
     companyName: "",
+    traderStyle,
     currentPrice: 0,
     dailyChangePct: 0,
     open: 0,
@@ -484,9 +486,9 @@ function normalizeReportSections(
   return sections.length > 0 ? sections : fallback;
 }
 
-function normalizeAnalysis(ticker: string, raw: unknown): StockAnalysisData {
+function normalizeAnalysis(ticker: string, raw: unknown, traderStyle: TraderStyle): StockAnalysisData {
   const normalizedTicker = getAnalysisTicker(ticker);
-  const fallback = createEmptyAnalysis(normalizedTicker);
+  const fallback = createEmptyAnalysis(normalizedTicker, traderStyle);
   const payloadSource = isObject(raw)
     ? isObject(raw.data)
       ? isObject(raw.data[normalizedTicker])
@@ -511,6 +513,13 @@ function normalizeAnalysis(ticker: string, raw: unknown): StockAnalysisData {
 
   return {
     symbol: liveSymbol,
+    traderStyle:
+      firstDefined(
+        asString(payload.traderStyle),
+        asString(payload.trader_style)
+      ) === "long-term"
+        ? "long-term"
+        : traderStyle,
     companyName:
       asString(
         firstDefined(payload.companyName, payload.company_name, payload.company, payload.name)
@@ -614,6 +623,7 @@ function normalizeAnalysis(ticker: string, raw: unknown): StockAnalysisData {
 
 export async function fetchLiveAnalysis(
   ticker: string,
+  traderStyle: TraderStyle,
   options?: { sessionToken?: string; guestId?: string }
 ): Promise<FetchAnalysisResult> {
   const normalizedTicker = getAnalysisTicker(ticker);
@@ -628,7 +638,7 @@ export async function fetchLiveAnalysis(
         ...(options?.sessionToken ? { "x-trade-session": options.sessionToken } : {}),
         ...(options?.guestId ? { "x-trade-guest-id": options.guestId } : {})
       },
-      body: JSON.stringify({ ticker: normalizedTicker }),
+      body: JSON.stringify({ ticker: normalizedTicker, traderStyle }),
       cache: "no-store",
       signal: controller.signal
     });
@@ -657,7 +667,7 @@ export async function fetchLiveAnalysis(
     const authObject = isObject(payloadObject.auth) ? payloadObject.auth : undefined;
 
     return {
-      analysis: normalizeAnalysis(normalizedTicker, payload),
+      analysis: normalizeAnalysis(normalizedTicker, payload, traderStyle),
       isLive: true,
       user: asAuthUser(authObject?.user) ?? null,
       guestUsage: asGuestUsage(authObject?.guestUsage),
@@ -683,6 +693,7 @@ export async function fetchLiveAnalysis(
 
 export async function fetchSavedAnalysis(
   ticker: string,
+  traderStyle: TraderStyle,
   options?: { sessionToken?: string; guestId?: string }
 ): Promise<FetchAnalysisResult> {
   const normalizedTicker = getAnalysisTicker(ticker);
@@ -691,7 +702,7 @@ export async function fetchSavedAnalysis(
 
   try {
     const response = await fetch(
-      `${ANALYZE_API_URL}?ticker=${encodeURIComponent(normalizedTicker)}&latest=true`,
+      `${ANALYZE_API_URL}?ticker=${encodeURIComponent(normalizedTicker)}&latest=true&traderStyle=${encodeURIComponent(traderStyle)}`,
       {
         method: "GET",
         headers: {
@@ -720,7 +731,7 @@ export async function fetchSavedAnalysis(
     }
 
     return {
-      analysis: normalizeAnalysis(normalizedTicker, payload),
+      analysis: normalizeAnalysis(normalizedTicker, payload, traderStyle),
       isLive: true
     };
   } catch (error) {

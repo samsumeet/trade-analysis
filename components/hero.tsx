@@ -4,6 +4,7 @@ import type { Dispatch, SetStateAction } from "react";
 import { motion } from "framer-motion";
 import { Activity, BrainCircuit, CandlestickChart, ShieldCheck } from "lucide-react";
 
+import type { TraderStyle } from "@/types/stock";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { TickerSearch } from "@/components/ticker-search";
@@ -11,6 +12,8 @@ import { TickerSearch } from "@/components/ticker-search";
 interface HeroProps {
   activeTicker: string;
   setActiveTicker: Dispatch<SetStateAction<string>>;
+  traderStyle: TraderStyle | null;
+  setTraderStyle: Dispatch<SetStateAction<TraderStyle | null>>;
 }
 
 const heroStats = [
@@ -36,7 +39,7 @@ const heroStats = [
   }
 ];
 
-export function Hero({ activeTicker, setActiveTicker }: HeroProps) {
+export function Hero({ activeTicker, setActiveTicker, traderStyle, setTraderStyle }: HeroProps) {
   return (
     <section className="relative overflow-hidden pt-6 sm:pt-10 lg:pt-12">
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.14),transparent_26%),radial-gradient(circle_at_left,rgba(16,185,129,0.12),transparent_24%),linear-gradient(to_bottom,rgba(255,255,255,0.86),rgba(248,250,252,1))] dark:bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.24),transparent_26%),radial-gradient(circle_at_left,rgba(16,185,129,0.18),transparent_24%),linear-gradient(to_bottom,rgba(2,6,23,0.92),rgba(2,8,23,1))]" />
@@ -69,8 +72,10 @@ export function Hero({ activeTicker, setActiveTicker }: HeroProps) {
               <TickerSearch
                 activeTicker={activeTicker}
                 setActiveTicker={setActiveTicker}
-                onAnalyze={(ticker) => {
-                  window.location.href = `/dashboard?ticker=${ticker}`;
+                traderStyle={traderStyle}
+                setTraderStyle={setTraderStyle}
+                onAnalyze={(ticker, selectedStyle) => {
+                  window.location.href = `/dashboard?ticker=${ticker}&style=${selectedStyle}`;
                 }}
                 sampleReportTargetId="workflow-overview"
                 quickTickers={["NVDA", "AAPL", "MSFT", "AMZN", "TSLA"]}

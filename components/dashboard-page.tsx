@@ -36,16 +36,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrency, formatRelativeTime } from "@/lib/utils";
 import {
+  DEFAULT_TRADER_STYLE,
+  getTraderStyleLabel
+} from "@/lib/trader-style";
+import {
   AnalysisAllowance,
   AnalysisHistoryItem,
   DashboardSummary,
   GuestUsage,
   WatchlistItem
 } from "@/types/auth";
-import { StockAnalysisData } from "@/types/stock";
+import { StockAnalysisData, TraderStyle } from "@/types/stock";
 
 interface DashboardPageProps {
   initialTicker: string;
+  initialTraderStyle?: TraderStyle;
 }
 
 interface AnalysisApiResponse {
@@ -156,23 +161,29 @@ function parseGuestHistory(value: string | null, limit: number) {
         const candidate = item as Partial<AnalysisHistoryItem>;
         return (
           typeof candidate.ticker === "string" &&
+          (candidate.traderStyle === "day-swing" || candidate.traderStyle === "long-term" || candidate.traderStyle === undefined) &&
           typeof candidate.companyName === "string" &&
           typeof candidate.lastAnalyzedAt === "string" &&
           typeof candidate.firstAnalyzedAt === "string" &&
           typeof candidate.analysisCount === "number"
         );
       })
+      .map((item) => ({
+        ...item,
+        traderStyle: item.traderStyle ?? DEFAULT_TRADER_STYLE
+      }))
       .slice(0, limit);
   } catch {
     return [];
   }
 }
 
-function createHistoryItem(analysis: StockAnalysisData): AnalysisHistoryItem {
+function createHistoryItem(analysis: StockAnalysisData, traderStyle: TraderStyle): AnalysisHistoryItem {
   const timestamp = new Date().toISOString();
 
   return {
     ticker: analysis.symbol,
+    traderStyle,
     companyName: analysis.companyName || analysis.symbol,
     currentPrice: Number.isFinite(analysis.currentPrice) ? analysis.currentPrice : null,
     trendBias: analysis.trendBias,
@@ -184,7 +195,9 @@ function createHistoryItem(analysis: StockAnalysisData): AnalysisHistoryItem {
 }
 
 function mergeHistoryItem(history: AnalysisHistoryItem[], item: AnalysisHistoryItem, limit: number) {
-  const existing = history.find((entry) => entry.ticker === item.ticker);
+  const existing = history.find(
+    (entry) => entry.ticker === item.ticker && entry.traderStyle === item.traderStyle
+  );
   const nextItem: AnalysisHistoryItem = existing
     ? {
         ...existing,
@@ -197,7 +210,12 @@ function mergeHistoryItem(history: AnalysisHistoryItem[], item: AnalysisHistoryI
       }
     : item;
 
-  return [nextItem, ...history.filter((entry) => entry.ticker !== item.ticker)].slice(0, limit);
+  return [
+    nextItem,
+    ...history.filter(
+      (entry) => !(entry.ticker === item.ticker && entry.traderStyle === item.traderStyle)
+    )
+  ].slice(0, limit);
 }
 
 function scrollToSection(sectionId: string) {
@@ -209,7 +227,7 @@ function scrollToSection(sectionId: string) {
   });
 }
 
-export function DashboardPage({ initialTicker }: DashboardPageProps) {
+export function DashboardPage({ initialTicker, initialTraderStyle }: DashboardPageProps) {
   const {
     guestId,
     guestUsage,
@@ -221,6 +239,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
     user
   } = useAuth();
   const [activeTicker, setActiveTicker] = useState(initialTicker);
+  const [traderStyle, setTraderStyle] = useState<TraderStyle | null>(initialTraderStyle ?? null);
   const [analysis, setAnalysis] = useState<StockAnalysisData | null>(null);
   const [error, setError] = useState<string | undefined>(undefined);
   const [isLive, setIsLive] = useState(false);
@@ -285,8 +304,9 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
 
   useEffect(() => {
     setActiveTicker(initialTicker);
+    setTraderStyle(initialTraderStyle ?? null);
     setRequestMode("live");
-  }, [initialTicker]);
+  }, [initialTicker, initialTraderStyle]);
 
   useEffect(() => {
     if (!token || !isAuthenticated) {
@@ -353,7 +373,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
         return;
       }
 
-      if (!activeTicker) {
+      if (!activeTicker || !traderStyle) {
         setAnalysis(null);
         setError(undefined);
         setIsLive(false);
@@ -375,19 +395,22 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
         };
         const response =
           requestMode === "history"
-            ? await fetch(`/api/analyze?ticker=${encodeURIComponent(activeTicker)}&mode=history`, {
-                method: "GET",
-                headers: sharedHeaders,
-                cache: "no-store",
-                signal: controller.signal
-              })
+            ? await fetch(
+                `/api/analyze?ticker=${encodeURIComponent(activeTicker)}&mode=history&traderStyle=${encodeURIComponent(traderStyle)}`,
+                {
+                  method: "GET",
+                  headers: sharedHeaders,
+                  cache: "no-store",
+                  signal: controller.signal
+                }
+              )
             : await fetch(`/api/analyze`, {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
                   ...sharedHeaders
                 },
-                body: JSON.stringify({ ticker: activeTicker }),
+                body: JSON.stringify({ ticker: activeTicker, traderStyle }),
                 cache: "no-store",
                 signal: controller.signal
               });
@@ -434,7 +457,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
         setIsLive(payload.isLive);
 
         if (payload.analysis && requestMode === "live") {
-          const nextHistoryItem = createHistoryItem(payload.analysis);
+          const nextHistoryItem = createHistoryItem(payload.analysis, traderStyle);
           setHistory((current) => mergeHistoryItem(current, nextHistoryItem, DEFAULT_HISTORY_LIMIT));
         }
       } catch (fetchError) {
@@ -459,7 +482,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
     void loadAnalysis();
 
     return () => controller.abort();
-  }, [activeTicker, guestId, reloadKey, requestMode, setAllowance, setGuestUsage, token]);
+  }, [activeTicker, guestId, reloadKey, requestMode, setAllowance, setGuestUsage, token, traderStyle]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -517,6 +540,29 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
     }
   }, [analysis]);
 
+  const dashboardUrl = (ticker: string, selectedTraderStyle: TraderStyle | null) => {
+    const params = new URLSearchParams();
+
+    if (ticker) {
+      params.set("ticker", ticker);
+    }
+
+    if (selectedTraderStyle) {
+      params.set("style", selectedTraderStyle);
+    }
+
+    const query = params.toString();
+    return query ? `/dashboard?${query}` : "/dashboard";
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.history.replaceState(null, "", dashboardUrl(activeTicker, traderStyle));
+  }, [activeTicker, traderStyle]);
+
   const selectTicker = (ticker: string) => {
     if (ticker === activeTicker) {
       return;
@@ -526,11 +572,12 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
     setActiveTicker(ticker);
     setAnalysis(null);
     setIsLoading(true);
-    window.history.replaceState(null, "", `/dashboard?ticker=${ticker}`);
+    window.history.replaceState(null, "", dashboardUrl(ticker, traderStyle));
     scrollToSection("dashboard");
   };
 
-  const refreshTicker = (ticker: string) => {
+  const refreshTicker = (ticker: string, selectedTraderStyle: TraderStyle) => {
+    setTraderStyle(selectedTraderStyle);
     setRequestMode("live");
     if (ticker === activeTicker) {
       setIsLoading(true);
@@ -538,7 +585,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
       setError(undefined);
       setIsLive(false);
       setReloadKey((current) => current + 1);
-      window.history.replaceState(null, "", `/dashboard?ticker=${ticker}`);
+      window.history.replaceState(null, "", dashboardUrl(ticker, selectedTraderStyle));
       scrollToSection("dashboard");
       return;
     }
@@ -546,14 +593,15 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
     selectTicker(ticker);
   };
 
-  const viewHistoryTicker = (ticker: string) => {
+  const viewHistoryTicker = (ticker: string, selectedTraderStyle: TraderStyle) => {
+    setTraderStyle(selectedTraderStyle);
     setRequestMode("history");
     setActiveTicker(ticker);
     setAnalysis(null);
     setError(undefined);
     setIsLive(false);
     setIsLoading(true);
-    window.history.replaceState(null, "", `/dashboard?ticker=${ticker}`);
+    window.history.replaceState(null, "", dashboardUrl(ticker, selectedTraderStyle));
     scrollToSection("dashboard");
   };
 
@@ -765,6 +813,8 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                 <TickerSearch
                   activeTicker={activeTicker}
                   setActiveTicker={setActiveTicker}
+                  traderStyle={traderStyle}
+                  setTraderStyle={setTraderStyle}
                   onAnalyze={refreshTicker}
                   onTickerSelect={selectTicker}
                   sampleReportTargetId="analysis-brief"
@@ -794,6 +844,11 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                 ) : null}
                 {allowance?.accountTier === "paid" ? (
                   <Badge variant="bullish">Unlimited analyses enabled</Badge>
+                ) : null}
+                {traderStyle ? (
+                  <Badge variant="default" className="bg-white/80 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                    {getTraderStyleLabel(traderStyle)}
+                  </Badge>
                 ) : null}
               </div>
 
@@ -960,9 +1015,9 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                       {history.length > 0 ? (
                         history.slice(0, DEFAULT_HISTORY_LIMIT).map((item) => (
                           <button
-                            key={item.ticker}
+                            key={`${item.ticker}-${item.traderStyle}`}
                             type="button"
-                            onClick={() => viewHistoryTicker(item.ticker)}
+                            onClick={() => viewHistoryTicker(item.ticker, item.traderStyle)}
                             className="flex w-full items-center justify-between gap-4 rounded-2xl border border-slate-200/80 bg-slate-50/80 px-4 py-3 text-left transition hover:border-slate-300 hover:bg-white dark:border-slate-800 dark:bg-slate-950/50 dark:hover:border-slate-700 dark:hover:bg-slate-900"
                           >
                             <div className="min-w-0">
@@ -975,6 +1030,9 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                                     {item.trendBias}
                                   </Badge>
                                 ) : null}
+                                <Badge variant="info" className="px-2 py-0.5 text-[10px]">
+                                  {item.traderStyle === "long-term" ? "Long-Term" : "Day / Swing"}
+                                </Badge>
                               </div>
                               <p className="mt-1 truncate text-sm text-slate-600 dark:text-slate-300">
                                 {item.companyName}
@@ -1008,6 +1066,9 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                         Viewing saved history snapshot
                       </Badge>
                     ) : null}
+                    <Badge variant="info" className="bg-white/80 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                      {getTraderStyleLabel(traderStyle ?? DEFAULT_TRADER_STYLE)}
+                    </Badge>
                     <Badge variant={analysis.dailyChangePct >= 0 ? "bullish" : "bearish"}>
                       {analysis.dailyChangePct >= 0 ? "+" : ""}
                       {analysis.dailyChangePct.toFixed(2)}% today
@@ -1111,7 +1172,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                       {activeTicker ? (
                         <Button
                           type="button"
-                          onClick={() => refreshTicker(activeTicker)}
+                          onClick={() => traderStyle && refreshTicker(activeTicker, traderStyle)}
                           className="w-fit"
                         >
                           Retry Live Analysis
@@ -1275,7 +1336,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                   request again once the backend is available.
                 </p>
                 <div className="mt-8 flex justify-center">
-                  <Button type="button" onClick={() => refreshTicker(activeTicker)}>
+                  <Button type="button" onClick={() => traderStyle && refreshTicker(activeTicker, traderStyle)}>
                     Retry Live Analysis
                   </Button>
                 </div>
@@ -1293,7 +1354,7 @@ export function DashboardPage({ initialTicker }: DashboardPageProps) {
                   Choose a stock to start the dashboard
                 </h3>
                 <p className="mt-4 text-base leading-8 text-slate-600 dark:text-slate-300">
-                  We no longer auto-run NVDA here. Search any US stock above and the live analysis view will load on demand.
+                  Pick whether you trade day/swing setups or long-term trends first, then search any US stock above and the live analysis view will load on demand.
                 </p>
               </div>
             </CardContent>

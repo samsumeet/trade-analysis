@@ -1,4 +1,5 @@
 export type SignalTone = "bullish" | "warning" | "bearish" | "neutral";
+export type TraderStyle = "day-swing" | "long-term";
 
 export interface PricePoint {
   label: string;
@@ -53,6 +54,7 @@ export interface SampleReportSection {
 export interface StockAnalysisData {
   symbol: string;
   companyName: string;
+  traderStyle: TraderStyle;
   currentPrice: number;
   dailyChangePct: number;
   open: number;

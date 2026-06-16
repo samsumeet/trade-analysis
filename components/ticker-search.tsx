@@ -8,11 +8,15 @@ import nyseTickers from "@/data/nyse_tickers.json";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { getTraderStyleLabel, TRADER_STYLE_OPTIONS } from "@/lib/trader-style";
+import type { TraderStyle } from "@/types/stock";
 
 interface TickerSearchProps {
   activeTicker: string;
   setActiveTicker: Dispatch<SetStateAction<string>>;
-  onAnalyze?: (ticker: string) => void;
+  traderStyle: TraderStyle | null;
+  setTraderStyle: Dispatch<SetStateAction<TraderStyle | null>>;
+  onAnalyze?: (ticker: string, traderStyle: TraderStyle) => void;
   onTickerSelect?: (ticker: string) => void;
   sampleReportTargetId?: string;
   quickTickers?: string[];
@@ -29,6 +33,8 @@ const AVAILABLE_TICKERS = (nyseTickers as string[]).filter((ticker) =>
 export function TickerSearch({
   activeTicker,
   setActiveTicker,
+  traderStyle,
+  setTraderStyle,
   onAnalyze,
   onTickerSelect,
   sampleReportTargetId = "analysis-brief",
@@ -69,6 +75,11 @@ export function TickerSearch({
   }, [query]);
 
   const triggerAnalysis = (ticker: string) => {
+    if (!traderStyle) {
+      setError("Choose whether you are a day/swing trader or a long-term trader first.");
+      return;
+    }
+
     setError("");
     setPendingTicker(ticker);
     setIsAutocompleteOpen(false);
@@ -78,7 +89,7 @@ export function TickerSearch({
 
     window.setTimeout(() => {
       if (onAnalyze) {
-        onAnalyze(ticker);
+        onAnalyze(ticker, traderStyle);
         return;
       }
 
@@ -98,6 +109,11 @@ export function TickerSearch({
   };
 
   const handleAnalyze = () => {
+    if (!traderStyle) {
+      setError("Choose your trader type first so we can tailor the analysis.");
+      return;
+    }
+
     const normalized = query.trim().toUpperCase();
     if (!/^[A-Z.\-]{1,10}$/.test(normalized)) {
       setError("Enter a valid US stock ticker, for example NVDA or AAPL.");
@@ -144,7 +160,8 @@ export function TickerSearch({
                   </div>
                   <p className="mt-4 max-w-2xl text-[13px] leading-6 text-slate-200 sm:mt-6 sm:text-base sm:leading-8">
                     Streaming market context, technical structure, trade levels, and
-                    AI scenario framing into a live research terminal.
+                    AI scenario framing into a live research terminal for{" "}
+                    {getTraderStyleLabel(traderStyle ?? "day-swing").toLowerCase()}s.
                   </p>
 
                   <div className="mt-5 grid gap-3 sm:mt-8 sm:grid-cols-3">
@@ -232,8 +249,9 @@ export function TickerSearch({
         </div>
       ) : null}
 
-      <div className="flex flex-col gap-3 rounded-[24px] border border-white/70 bg-white/75 p-3 shadow-soft backdrop-blur dark:border-slate-800 dark:bg-slate-900/80 xl:flex-row">
-        <div className="relative flex-1">
+      <div className="rounded-[24px] border border-white/70 bg-white/75 p-3 shadow-soft backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
+        <div className="flex flex-col gap-3 xl:flex-row">
+          <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
           <Input
             aria-label="Stock ticker"
@@ -321,15 +339,64 @@ export function TickerSearch({
               </div>
             </div>
           ) : null}
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row xl:shrink-0">
+            <Button
+              size="lg"
+              className="w-full gap-2 sm:w-auto"
+              onClick={handleAnalyze}
+              disabled={analysisLoading || !traderStyle}
+            >
+              Analyze a Stock
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+            <Button variant="secondary" size="lg" className="w-full sm:w-auto" onClick={handleSampleReport}>
+              View Analysis Brief
+            </Button>
+          </div>
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Button size="lg" className="w-full gap-2 sm:w-auto" onClick={handleAnalyze}>
-            Analyze a Stock
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-          <Button variant="secondary" size="lg" className="w-full sm:w-auto" onClick={handleSampleReport}>
-            View Analysis Brief
-          </Button>
+
+        <div className="mt-3 flex flex-col gap-2 rounded-[20px] border border-slate-200/80 bg-slate-50/80 px-3 py-3 dark:border-slate-800 dark:bg-slate-950/60">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+              Trader type
+            </p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              Choose your analysis profile first
+            </p>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {TRADER_STYLE_OPTIONS.map((option) => {
+              const active = traderStyle === option.value;
+
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => {
+                    setTraderStyle(option.value);
+                    if (error) {
+                      setError("");
+                    }
+                  }}
+                  className={`rounded-2xl border px-3 py-2.5 text-left transition ${
+                    active
+                      ? "border-slate-900 bg-slate-900 text-white dark:border-blue-500 dark:bg-blue-500"
+                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-slate-700"
+                  }`}
+                >
+                  <p className="text-sm font-semibold">{option.shortLabel}</p>
+                  <p
+                    className={`mt-1 text-[12px] leading-5 ${
+                      active ? "text-white/80" : "text-slate-500 dark:text-slate-400"
+                    }`}
+                  >
+                    {option.description}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
       {error ? <p className="text-sm text-rose-600 dark:text-rose-400">{error}</p> : null}

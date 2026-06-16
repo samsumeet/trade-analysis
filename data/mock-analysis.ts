@@ -1,6 +1,6 @@
-import { StockAnalysisData } from "@/types/stock";
+import { StockAnalysisData, TraderStyle } from "@/types/stock";
 
-export const stockAnalyses: Record<string, StockAnalysisData> = {
+const RAW_STOCK_ANALYSES: Record<string, Omit<StockAnalysisData, "traderStyle">> = {
   HIMS: {
     symbol: "HIMS",
     companyName: "Hims & Hers Health, Inc.",
@@ -371,6 +371,16 @@ export const stockAnalyses: Record<string, StockAnalysisData> = {
     ]
   }
 };
+
+export const stockAnalyses: Record<string, StockAnalysisData> = Object.fromEntries(
+  Object.entries(RAW_STOCK_ANALYSES).map(([ticker, analysis]) => [
+    ticker,
+    {
+      traderStyle: "day-swing" satisfies TraderStyle,
+      ...analysis
+    }
+  ])
+) as Record<string, StockAnalysisData>;
 
 export const featuredSymbols = Object.keys(stockAnalyses);
 

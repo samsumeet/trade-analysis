@@ -23,6 +23,7 @@ import { Pricing } from "@/components/pricing";
 import { SectionHeading } from "@/components/section-heading";
 import { SiteHeader } from "@/components/site-header";
 import { Card, CardContent } from "@/components/ui/card";
+import type { TraderStyle } from "@/types/stock";
 
 const infrastructureFeatures = [
   {
@@ -99,6 +100,7 @@ const featureGrid = [
 
 export function HomePage() {
   const [activeTicker, setActiveTicker] = useState("NVDA");
+  const [traderStyle, setTraderStyle] = useState<TraderStyle | null>(null);
 
   return (
     <main className="pb-10">
@@ -113,6 +115,8 @@ export function HomePage() {
       <Hero
         activeTicker={activeTicker}
         setActiveTicker={setActiveTicker}
+        traderStyle={traderStyle}
+        setTraderStyle={setTraderStyle}
       />
 
       <section className="container mt-8 sm:mt-10">
